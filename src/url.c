@@ -23,6 +23,8 @@
 #include <ctype.h>
 #include <sys/types.h>
 
+#include "config.h"
+
 #define STR_FREE(ptr) if (ptr && ptr!=NULL) { free(ptr); }
 
 #include "url.h"
@@ -37,6 +39,7 @@
 #include "ebcdic.h"
 #endif /*APACHE*/
 #endif /*_OSD_POSIX*/
+
 
 /* {{{ free_url
  */

@@ -575,7 +575,7 @@ static struct action_descr actions_map[] = {
 static int do_action(json_parser *parser, int next_state)
 {
 	struct action_descr *descr = &actions_map[next_state & ~0x80];
-	int ret;
+	int ret = 0;
 
 	if (descr->call) {
 		if (descr->dobuffer)

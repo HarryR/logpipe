@@ -1,6 +1,7 @@
 #include "parser.h"
 
 #include <time.h>
+#include "timegm.h"
 
 #define SAVE_LINE_STR(field) { line->field.ptr = line->ts; line->field.len = line->p - line->ts; }
 

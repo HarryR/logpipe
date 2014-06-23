@@ -1,4 +1,9 @@
-parser.c
+CMakeCache.txt
+CMakeFiles/
+Makefile
+cmake_install.cmake
+config.h
+src/parser.c
 *.o
 *.swp
 apacheclf2json

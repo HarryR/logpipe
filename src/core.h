@@ -1,8 +1,10 @@
 #ifndef CORE_H_
 #define CORE_H_
 
-#define _XOPEN_SOURCE 700
-#define _BSD_SOURCE
+#include "config.h"
+
+//#define _XOPEN_SOURCE 700
+//#define _BSD_SOURCE
 #include <time.h>
 
 #include "json.h"
