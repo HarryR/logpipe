@@ -27,8 +27,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 int unhex(char* hex, int cnt) {
-  int r = 0;
-  for (int i=0; i<cnt; i++) {
+  int r = 0, i;
+  for (i=0; i<cnt; i++) {
     char c = *hex++;
     int n;
     if ('0' <= c && c <= '9') n = c - '0';

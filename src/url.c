@@ -17,13 +17,15 @@
  */
 /* $Id$ */
 
+#include "config.h"
+
 #define _GNU_SOURCE
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
 #include <sys/types.h>
 
-#include "config.h"
+
 
 #define STR_FREE(ptr) if (ptr && ptr!=NULL) { free(ptr); }
 

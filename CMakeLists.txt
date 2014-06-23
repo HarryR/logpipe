@@ -39,8 +39,6 @@ IF (NOT HAVE_MEMRCHR)
     MESSAGE (STATUS "Using portable memrchr")
     SET(sources ${sources} portable/memrchr.c)
     SET(includes ${sources} portable/memrchr.h)
-ELSE (NOT HAVE_MEMRCHR)
-    MESSAGE (STATUS "${HAVE_MEMRCHR}")
 ENDIF (NOT HAVE_MEMRCHR)
 
 function(ragel_gen in_rl)

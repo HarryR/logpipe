@@ -23,7 +23,8 @@ const char* jvp_utf8_next(const char* in, const char* end, int* codepoint_ret) {
     length = end - in;
   } else {
     codepoint = ((unsigned)in[0]) & utf8_coding_bits[first];
-    for (int i=1; i<length; i++) {
+    int i;
+    for (i=1; i<length; i++) {
       unsigned ch = (unsigned char)in[i];
       if (utf8_coding_length[ch] != UTF8_CONTINUATION_BYTE){
         /* Invalid UTF8 sequence - not followed by the right number of continuation bytes */
