@@ -1,3 +1,5 @@
 parser.c
 *.o
+*.swp
 apacheclf2json
+*.log

@@ -46,9 +46,9 @@ static const uint8_t map2[] =
     0x2c, 0x2d, 0x2e, 0x2f, 0x30, 0x31, 0x32, 0x33
 };
 
-int base64_decode(uint8_t *out, const char *in, int out_size)
+size_t base64_decode(uint8_t *out, const char *in, int out_size)
 {
-    int i, v;
+    size_t i, v;
     uint8_t *dst = out;
 
     v = 0;
@@ -73,7 +73,7 @@ int base64_decode(uint8_t *out, const char *in, int out_size)
 * Fixed edge cases and made it work from data (vs. strings) by Ryan.
 *****************************************************************************/
 
-char *base64_encode(char *out, int out_size, const uint8_t *in, int in_size)
+char *base64_encode(char *out, size_t out_size, const uint8_t *in, size_t in_size)
 {
     static const char b64[] =
         "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
