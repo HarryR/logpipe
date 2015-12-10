@@ -49,8 +49,7 @@ void logline_print_extra(logopt_t *opt, json_printer *jp) {
 
 void logline_print_id(logline_t *line, json_printer *jp, const char* key) {
     char b64[BASE64_SIZE(16)];
-    char* x = base64_encode(b64, sizeof(b64), line->md5, 16);
-    assert(x != NULL);
+    base64_encode(b64, sizeof(b64), line->md5, 16);
     b64[22] = 0;
     json_print_key(jp, key);
     json_print_raw(jp, JSON_STRING, b64, 22);
@@ -190,7 +189,7 @@ void logline_logstash_print(logline_t *line, logopt_t *opt, FILE *fd) {
         json_print_key(&jp, "@timestamp");
         json_print_raw(&jp, JSON_STRING, timestamp, strlen(timestamp));
 
-        print_keystr(&jp, "client_ip", &line->host);
+        print_keystr(&jp, "client_ip", &line->client_ip);
 
         /* "req": {...} */
         json_print_key(&jp, "req");

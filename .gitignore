@@ -4,6 +4,7 @@ Makefile
 cmake_install.cmake
 config.h
 src/parser.c
+src/parser_clf.c
 *.o
 *.swp
 apacheclf2json

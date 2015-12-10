@@ -4,20 +4,23 @@
 #include <string.h>
 #include <unistd.h>
 
-#define MAX_LINE_LENGTH 4096
+#define MAX_LINE_LENGTH 8192
 
-static const char default_rowtype[] = "apacheclf";
-static const char default_format[] = "logstash";
+static const char default_rowtype[] = "clf";
+static const char default_format_out[] = "logstash";
+static const char default_format_in[] = "clf";
 static const char default_index_fmt[] = "logstash-%Y.%m.%d";
 
 static void show_help(char *program) {
     fprintf(stderr, "Usage: %s <options>\n\n", program);
     fprintf(stderr, "  -h           - Show help\n\n");
-	fprintf(stderr, "  -f <format>  - Output format\n");
-	fprintf(stderr, "                 default: \"%s\"\n", default_format);
+    fprintf(stderr, "  -i <input>   - Input format: clf, wikimedia\n");
+    fprintf(stderr, "                 default: \"%s\"\n\n", default_format_in);
+    fprintf(stderr, "  -o <output>  - Output format: logstash, hyperstats\n");
+    fprintf(stderr, "                 default: \"%s\"\n\n", default_format_out);
     fprintf(stderr, "  -t <type>    - value of \"_type\" field\n");
     fprintf(stderr, "                 default: \"%s\"\n\n", default_rowtype);
-    fprintf(stderr, "  -i <fmt>     - index name format, uses strftime\n");
+    fprintf(stderr, "  -k <fmt>     - index key format, uses strftime\n");
     fprintf(stderr, "                 default: \"%s\"\n\n", default_index_fmt);
     fprintf(stderr, "  -a <key=val> - Add extra keypairs to JSON output\n\n");
 }
@@ -30,7 +33,7 @@ static int logopt_init(logopt_t *opt, int argc, char **argv) {
     char *val;
     pair_t *pair;
 
-    while( (c = getopt(argc, argv, "ht:i:a:f:")) != -1 ) {
+    while( (c = getopt(argc, argv, "ht:i:k:a:o:")) != -1 ) {
         switch( c) {
         case 'h':
             return 0; 
@@ -39,11 +42,15 @@ static int logopt_init(logopt_t *opt, int argc, char **argv) {
             opt->rowtype = optarg;
             break;
 
-		case 'f':
-			opt->format = optarg;
-			break;
+        case 'o':
+          opt->format_out = optarg;
+        break;
 
         case 'i':
+            opt->format_in = optarg;
+            break;
+
+        case 'k':
             opt->index_fmt = optarg;
             break;
 
@@ -80,15 +87,18 @@ int main(int argc, char **argv) {
   size_t buf_sz;
   logline_t line;
   logopt_t opts;
-  int format;
 
   if( ! logopt_init(&opts, argc, argv) ) {
     show_help(argv[0]);
     return 1;
   }
 
-  if( opts.format == NULL ) {
-	opts.format = default_format;
+  if( opts.format_out == NULL ) {
+    opts.format_out = default_format_out;
+  }
+
+  if( opts.format_in == NULL ) {
+    opts.format_in = default_format_in;
   }
 
   if( opts.rowtype == NULL ) {
@@ -99,27 +109,28 @@ int main(int argc, char **argv) {
     opts.index_fmt = default_index_fmt;
   }
 
-  if( strcmp("logstash", opts.format) == 0 ) {
-    format = 1; 
+  logstash_print_fn_t print_fn;
+  logstash_parse_fn_t parse_fn = logline_parse_commonlogformat;
+  if( strcmp("logstash", opts.format_out) == 0 ) {
+    print_fn = logline_logstash_print;
   }
-  else if( strcmp("hyperstats", opts.format) == 0 ) {
-    format = 2;
+  else if( strcmp("hyperstats", opts.format_out) == 0 ) {
+    print_fn = logline_hyperstats_print;
   }
   else {
-    fprintf(stderr, "Error: unknown output format '%s'\n", opts.format);
+    fprintf(stderr, "Error: unknown output format '%s'\n", opts.format_out);
     show_help(argv[0]);
     return 1;
   }
  
+  /* Reads input lines, outputs parsed lines to stdout
+   * and unparsable lines to stderr.
+   */
   while(fgets(buf, MAX_LINE_LENGTH, stdin) != NULL) {
     buf_sz = strlen(buf);
-    if( logline_parse(&line, (unsigned char*)buf, buf_sz) ) {
-        if( format == 1 ) {
-        	logline_logstash_print(&line, &opts, stdout);
-		}
-		else if(  format == 2 ) {
-			logline_hyperstats_print(&line, &opts, stdout);
-		}
+    logline_line_init(&line, (unsigned char*)buf, buf_sz);
+    if( parse_fn(&line) ) {
+      print_fn(&line, &opts, stdout);
     }
     else {
         fwrite(buf, buf_sz, 1, stderr);

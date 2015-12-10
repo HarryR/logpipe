@@ -730,6 +730,7 @@ int json_print_init(json_printer *printer, json_printer_callback callback, void 
 int json_print_free(json_printer *printer)
 {
 	assert( printer );
+    (void)printer;
 	return 0;
 }
 

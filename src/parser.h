@@ -3,7 +3,10 @@
 
 #include "core.h"
 
-int logline_parse(logline_t *line, unsigned char* buf, size_t buf_sz);
+typedef int (*logstash_parse_fn_t)(logline_t *line);
+void logline_line_init(logline_t *line, unsigned char* buf, size_t buf_sz);
+int logline_parse_commonlogformat(logline_t *line);
+void logline_parse_timestamp_commonlogformat( logline_t *line );
 
 #endif
 

@@ -25,7 +25,7 @@
   # > and % denote entering and leaving actions respectively, so this machine
   #   will mark and emit each of the following token types as it sees them
   client_ip = [0-9\.]+
-            >mark %{ SAVE_LINE_STR(host) };
+            >mark %{ SAVE_LINE_STR(client_ip) };
 
   timestamp = [^\]]+
             >mark %{ SAVE_LINE_STR(timestamp) };
@@ -69,31 +69,10 @@
 
 }%%
 
-
-static void logline_parse_timestamp( logline_t *line ) {
-    struct tm local_timestamp;
-    strptime((char*)line->timestamp.ptr, "%d/%b/%Y:%H:%M:%S %z", &local_timestamp);
-    long int gmtoff = local_timestamp.tm_gmtoff;
-    time_t actual_time = timegm(&local_timestamp) - gmtoff;
-    gmtime_r(&actual_time, &line->utc_timestamp);
-}
-
-
-int logline_parse(logline_t *line, unsigned char* buf, size_t buf_sz) {
-    memset(line, 0, sizeof(*line));
-    line->p = buf;
-    line->eof = line->pe = buf + buf_sz;
-    line->ts = line->p;
-    line->raw.ptr = (unsigned char*)buf;
-    line->raw.len = buf_sz;
-
-	logline_make_md5(line);
-
+int logline_parse_commonlogformat(logline_t *line) {
     %% write init;  
     %% write exec;
-
-    logline_parse_timestamp(line);
-
+    logline_parse_timestamp_commonlogformat(line);
     return 1;
 }
 

@@ -29,7 +29,7 @@ typedef struct {
     str_t raw;
 
     str_t timestamp;
-    str_t host;
+    str_t client_ip;
     str_t req_verb;
     str_t req_path;
     str_t req_ver;
@@ -37,10 +37,18 @@ typedef struct {
     str_t resp_size;
     str_t req_referrer;
     str_t req_agent;
+
+    // Squid options 
+    str_t duration;     // request duration
+    str_t total_bytes;  // total bytes transferred
+    str_t result_code;  // Squid result code
+    str_t heir_code;    // Hierarchy code
+    str_t mime_type;    // Hierarchy code
 } logline_t;
 
 typedef struct {
-	const char* format;
+	const char* format_in;
+    const char* format_out;
     const char* rowtype;
     const char* index_fmt;
     pair_t* extra;
@@ -49,6 +57,8 @@ typedef struct {
 
 void logline_hyperstats_print(logline_t *line, logopt_t *opt, FILE *fd);
 void logline_logstash_print(logline_t* line, logopt_t *opt, FILE* fd);
+
+typedef void (*logstash_print_fn_t)(logline_t *line, logopt_t *opt, FILE *fd);
 
 void logline_print_extra(logopt_t *opt, json_printer *jp);
 void logline_print_id(logline_t *line, json_printer *jp, const char* key);
