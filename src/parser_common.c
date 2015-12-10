@@ -1,7 +1,7 @@
 #include "parser.h"
 #include <assert.h>
 
-void logline_parse_timestamp_commonlogformat( logline_t *line ) {
+void logline_parse_timestamp_apacheclf( logline_t *line ) {
     struct tm local_timestamp;
     strptime((char*)line->timestamp.ptr, "%d/%b/%Y:%H:%M:%S %z", &local_timestamp);
     long int gmtoff = local_timestamp.tm_gmtoff;

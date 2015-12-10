@@ -6,15 +6,15 @@
 
 #define MAX_LINE_LENGTH 8192
 
-static const char default_rowtype[] = "clf";
+static const char default_rowtype[] = "apacheclf";
 static const char default_format_out[] = "logstash";
-static const char default_format_in[] = "clf";
+static const char default_format_in[] = "apacheclf";
 static const char default_index_fmt[] = "logstash-%Y.%m.%d";
 
 static void show_help(char *program) {
     fprintf(stderr, "Usage: %s <options>\n\n", program);
     fprintf(stderr, "  -h           - Show help\n\n");
-    fprintf(stderr, "  -i <input>   - Input format: clf, wikimedia\n");
+    fprintf(stderr, "  -i <input>   - Input format: apacheclf, wikimedia\n");
     fprintf(stderr, "                 default: \"%s\"\n\n", default_format_in);
     fprintf(stderr, "  -o <output>  - Output format: logstash, hyperstats\n");
     fprintf(stderr, "                 default: \"%s\"\n\n", default_format_out);
@@ -109,8 +109,17 @@ int main(int argc, char **argv) {
     opts.index_fmt = default_index_fmt;
   }
 
+  logstash_parse_fn_t parse_fn;
+  if( strcmp("apacheclf", opts.format_in) == 0 ) {
+    parse_fn = logline_parse_apacheclf;
+  }
+  else {
+    fprintf(stderr, "Error: unknown input format '%s'\n", opts.format_in);
+    show_help(argv[0]);
+    return 1;
+  }
+
   logstash_print_fn_t print_fn;
-  logstash_parse_fn_t parse_fn = logline_parse_commonlogformat;
   if( strcmp("logstash", opts.format_out) == 0 ) {
     print_fn = logline_logstash_print;
   }

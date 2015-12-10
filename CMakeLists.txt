@@ -72,13 +72,19 @@ ENDIF (NOT HAVE_MEMRCHR)
 
 
 
+
 CONFIGURE_FILE (
   "${PROJECT_SOURCE_DIR}/config.h.in"
   "${PROJECT_BINARY_DIR}/config.h"
   )
 INCLUDE_DIRECTORIES(${PROJECT_BINARY_DIR})
+INCLUDE_DIRECTORIES(${PROJECT_BINARY_DIR}/hiredis)
 INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/portable)
 
-RAGEL_GEN(src/parser_clf)
-ADD_EXECUTABLE(apacheclf2json ${sources} ${CMAKE_CURRENT_BINARY_DIR}/src/parser_clf.c)
+add_custom_target(bin-dir ALL
+    COMMAND ${CMAKE_COMMAND} -E make_directory ../bin/)
+RAGEL_GEN(src/parser_apacheclf)
+ADD_EXECUTABLE(apacheclf2json ${sources} ${CMAKE_CURRENT_BINARY_DIR}/src/parser_apacheclf.c)
+set(EXECUTABLE_OUTPUT_PATH ../bin/)
+TARGET_LINK_LIBRARIES(apacheclf2json ${CMAKE_CURRENT_BINARY_DIR}/hiredis/libhiredis.a)
 INSTALL(TARGETS apacheclf2json DESTINATION bin)

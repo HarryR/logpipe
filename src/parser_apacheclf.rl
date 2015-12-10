@@ -6,7 +6,7 @@
 #define SAVE_LINE_STR(field) { line->field.ptr = line->ts; line->field.len = line->p - line->ts; }
 
 %%{
-  machine parser;
+  machine parser_apacheclf;
 
   alphtype unsigned char;
   access line->;
@@ -69,10 +69,10 @@
 
 }%%
 
-int logline_parse_commonlogformat(logline_t *line) {
+int logline_parse_apacheclf(logline_t *line) {
     %% write init;  
     %% write exec;
-    logline_parse_timestamp_commonlogformat(line);
+    logline_parse_timestamp_apacheclf(line);
     return 1;
 }
 
