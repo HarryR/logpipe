@@ -72,6 +72,15 @@ ENDIF (NOT HAVE_MEMRCHR)
 
 
 
+include(ExternalProject)
+ExternalProject_Add(hiredis
+    DOWNLOAD_DIR ${CMAKE_CURRENT_SOURCE_DIR}/hiredis
+    GIT_REPOSITORY https://github.com/redis/hiredis.git
+    SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/hiredis
+    CONFIGURE_COMMAND true
+    BUILD_COMMAND make -C ${CMAKE_CURRENT_SOURCE_DIR}/hiredis
+    INSTALL_COMMAND true)
+
 
 CONFIGURE_FILE (
   "${PROJECT_SOURCE_DIR}/config.h.in"
@@ -82,9 +91,10 @@ INCLUDE_DIRECTORIES(${PROJECT_BINARY_DIR}/hiredis)
 INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/portable)
 
 add_custom_target(bin-dir ALL
-    COMMAND ${CMAKE_COMMAND} -E make_directory ../bin/)
+    COMMAND ${CMAKE_COMMAND} -E make_directory bin/)
 RAGEL_GEN(src/parser_apacheclf)
 ADD_EXECUTABLE(apacheclf2json ${sources} ${CMAKE_CURRENT_BINARY_DIR}/src/parser_apacheclf.c)
-set(EXECUTABLE_OUTPUT_PATH ../bin/)
+set(EXECUTABLE_OUTPUT_PATH bin/)
 TARGET_LINK_LIBRARIES(apacheclf2json ${CMAKE_CURRENT_BINARY_DIR}/hiredis/libhiredis.a)
+add_dependencies(apacheclf2json hiredis bin-dir)
 INSTALL(TARGETS apacheclf2json DESTINATION bin)
