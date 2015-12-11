@@ -106,7 +106,7 @@ static int parse_apacheclf(void *ctx, str_t *str, logline_t *line) {
     int cs;
     unsigned char *p, *pe, *ts, *eof;
     line_free(line);
-    line_init(line, NULL);
+    line_init(line, str);
 
     p = str->ptr;
     eof = pe = str->ptr + str->len;

@@ -104,8 +104,6 @@ void line_free(logline_t *line) {
     str_clear(&line->result_code);
     str_clear(&line->heir_code);
     str_clear(&line->mime_type);
-
-    line_init(line, NULL);
   }
 }
 
@@ -123,7 +121,7 @@ int steps_init(logstep_t *steps, str_t *str, logline_t *line) {
   int ret = 0;
   logstep_t *step = &steps[ret];
   str_init(str);
-  line_init(line, str);
+  line_init(line, NULL);
   while( step && step->mod ) {
     const logmod_t *mod = step->mod;
     if( mod->init_fn ) {      
