@@ -36,18 +36,4 @@ int str_append_str(str_t *str, str_t *b);
 void str_init(str_t *str);
 void str_free(str_t *str);
 
-/*
-void logline_hyperstats_print(logline_t *line, logopt_t *opt, FILE *fd);
-void logline_logstash_print(logline_t* line, logopt_t *opt, FILE* fd);
-
-typedef void (*logline_print_fn_t)(logline_t *line, logopt_t *opt, FILE *fd);
-
-int logline_input_stdin(logopt_t *ctx, str_t *line);
-
-void logline_print_extra(logopt_t *opt, json_printer *jp);
-void logline_print_id(logline_t *line, json_printer *jp, const char* key);
-void logline_print_splitpath(json_printer *jp, char *path, size_t len);
-void logline_make_md5(logline_t *line);
-*/
 #endif
-

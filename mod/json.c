@@ -28,7 +28,11 @@ static void print_keyraw(json_printer *jp, char *key, str_t *str) {
     json_print_raw(jp, JSON_INT, (char*)str->ptr, str->len);
 }
 
-void logline_print_extra(logopt_t *opt, json_printer *jp) {
+static void print_strraw(json_printer *jp, str_t *str) {
+    json_print_raw(jp, JSON_STRING, (char*)str->ptr, str->len);
+}
+
+static void logline_print_extra(logopt_t *opt, json_printer *jp) {
 		size_t i;
         /* Add extra fields to every record (specified via -a on cmdline) */
         for( i = 0; i < opt->extra_cnt; i++ ) {
@@ -42,7 +46,9 @@ void logline_print_id(logline_t *line, json_printer *jp, const char* key) {
     char b64[BASE64_SIZE(16)];
     base64_encode(b64, sizeof(b64), line->md5, 16);
     b64[22] = 0;
-    json_print_key(jp, key);
+    if( key ) {
+        json_print_key(jp, key);
+    }
     json_print_raw(jp, JSON_STRING, b64, 22);
 }
 
@@ -167,18 +173,7 @@ logstash_print(void *ctx, str_t *str, logline_t *line) {
         json_print_raw(&jp, JSON_OBJECT_BEGIN, NULL, 0);
 
 		logline_print_id(line, &jp, "_id");
-
-		/*
-        json_print_key(&jp, "_type");
-        json_print_raw(&jp, JSON_STRING, opt->rowtype, strlen(opt->rowtype));
-        */
-
-        /*
-        char index_name[0xff]; // XXX: how to know size of strftime result in advance?
-        strftime(index_name, sizeof(index_name), opt->index_fmt, &line->utc_timestamp);
-        json_print_key(&jp, "_index");
-        json_print_raw(&jp, JSON_STRING, index_name, strlen(index_name));
-        */
+        print_keystr2(&jp, "_type", "logstash");
 
         /* Timestamp compatible with logstash
          * This format should be auto-detected by elasticsearch
@@ -237,8 +232,6 @@ logstash_print(void *ctx, str_t *str, logline_t *line) {
             }
             json_print_raw(&jp, JSON_OBJECT_END, NULL, 0);
 
-		//logline_print_extra(opt, &jp);
-
         json_print_raw(&jp, JSON_OBJECT_END, NULL, 0);
 
     json_print_raw(&jp, JSON_OBJECT_END, NULL, 0);
@@ -247,4 +240,39 @@ logstash_print(void *ctx, str_t *str, logline_t *line) {
 }
 const logmod_t mod_print_logstash = {
 	"print.logstash", NULL, logstash_print, NULL
+};
+
+
+static int
+print_clfjson(void *ctx, str_t *str, logline_t *line) {
+    json_printer jp;
+    str_free(str);
+    json_print_init(&jp, str_append, str); 
+
+    char timestamp[50];
+    memset(timestamp, 0, sizeof(timestamp));
+    strftime(timestamp, sizeof(timestamp), "%d/%b/%Y:%H:%M:%S %z", &line->utc_timestamp);
+
+    json_print_raw(&jp, JSON_ARRAY_BEGIN, NULL, 0);    
+        logline_print_id(line, &jp, NULL);
+        json_print_raw(&jp, JSON_STRING, timestamp, strlen(timestamp));
+        print_strraw(&jp, &line->client_ip);
+        print_strraw(&jp, &line->client_identity);
+        print_strraw(&jp, &line->client_auth);
+        print_strraw(&jp, &line->req_ver);
+        print_strraw(&jp, &line->req_verb);
+        print_strraw(&jp, &line->resp_status);
+        print_strraw(&jp, &line->resp_size);
+        if( line->req_referrer.len ) {
+            print_strraw(&jp, &line->req_referrer);
+            if( line->req_agent.len ) {
+                print_strraw(&jp, &line->req_agent);
+            }
+        }
+    json_print_raw(&jp, JSON_ARRAY_END, NULL, 0);    
+    json_print_free(&jp);
+    return 1;
+}
+const logmod_t mod_print_clfjson = {
+    "print.clfjson", NULL, print_clfjson, NULL
 };

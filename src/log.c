@@ -1,12 +1,13 @@
 #include "mod.h"
 
 #include <ctype.h>
+#include <stdlib.h>
 
 const logmod_t *step_findmod(const char *name) {
   const logmod_t *mod = NULL;
   const char *name_end = name;
   while( isalnum(*name_end) && *name_end != '.' ) {
-    name_end++;
+    name_end++;    
   }
   if( name == name_end ) {
       return NULL;
@@ -15,7 +16,11 @@ const logmod_t *step_findmod(const char *name) {
   int i = 0;
   while( (mod = builtin_mods[i]) ) {
     if( ! mod->name ) break;
-    if( ! strncmp(name, mod->name, name_end - name) ) {
+    size_t len = name_end - name;
+    if( strlen(mod->name) > len ) {
+      len = strlen(mod->name);
+    }
+    if( ! strncmp(name, mod->name, len) ) {
       return mod;
     }
     i++;

@@ -18,6 +18,7 @@ extern const logmod_t mod_parse_apacheclf;
 extern const logmod_t mod_print_hyperstats;
 extern const logmod_t mod_print_logstash;
 extern const logmod_t mod_syslog;
+extern const logmod_t mod_print_clfjson;
 //extern const logmod_t mod_;
 
 #endif
