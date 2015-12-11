@@ -44,8 +44,9 @@ void steps_free(logstep_t *steps) {
 logstep_t *steps_new(int argc, const char **argv) {
     logstep_t *steps = NULL;
     size_t count = 0;
+    int i;
 
-    for( int i = 0; i < argc; i++ ) {
+    for( i = 0; i < argc; i++ ) {
       const logmod_t *mod = step_findmod(argv[i]);
       if( ! mod ) {
         fprintf(stderr, "Error: unknown step '%s'\n", argv[i]);
