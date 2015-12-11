@@ -1,6 +1,6 @@
 cmake_minimum_required (VERSION 2.8 FATAL_ERROR)
 
-PROJECT (apacheclf2json C)
+PROJECT (logpipe C)
 
 # get rid of the extra default configurations
 set(CMAKE_CONFIGURATION_TYPES "Debug;Release" CACHE STRING "Limited configurations" FORCE)
@@ -50,8 +50,8 @@ if (_GNU_SOURCE)
 endif()
 
 
-FILE(GLOB sources "${PROJECT_SOURCE_DIR}/src/*.c")
-FILE(GLOB includes "${PROJECT_SOURCE_DIR}/src/*.h")
+FILE(GLOB sources "${PROJECT_SOURCE_DIR}/src/*.c" "${PROJECT_SOURCE_DIR}/extsrc/*.c" "${PROJECT_SOURCE_DIR}/mod/*.c")
+FILE(GLOB includes "${PROJECT_SOURCE_DIR}/src/*.h" "${PROJECT_SOURCE_DIR}/mod/*.h" "${PROJECT_SOURCE_DIR}/extsrc/*.h")
 
 # We have a portable timegm function available
 CHECK_FUNCTION_EXISTS (timegm HAVE_TIMEGM)
@@ -78,6 +78,7 @@ ExternalProject_Add(hiredis
     GIT_REPOSITORY https://github.com/redis/hiredis.git
     SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/hiredis
     CONFIGURE_COMMAND true
+    UPDATE_COMMAND true
     BUILD_COMMAND make -C ${CMAKE_CURRENT_SOURCE_DIR}/hiredis
     INSTALL_COMMAND true)
 
@@ -88,13 +89,15 @@ CONFIGURE_FILE (
   )
 INCLUDE_DIRECTORIES(${PROJECT_BINARY_DIR})
 INCLUDE_DIRECTORIES(${PROJECT_BINARY_DIR}/hiredis)
+INCLUDE_DIRECTORIES(${PROJECT_BINARY_DIR}/extsrc)
+INCLUDE_DIRECTORIES(${PROJECT_BINARY_DIR}/src)
 INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/portable)
 
 add_custom_target(bin-dir ALL
     COMMAND ${CMAKE_COMMAND} -E make_directory bin/)
-RAGEL_GEN(src/parser_apacheclf)
-ADD_EXECUTABLE(apacheclf2json ${sources} ${CMAKE_CURRENT_BINARY_DIR}/src/parser_apacheclf.c)
+RAGEL_GEN(mod/parser_apacheclf)
+ADD_EXECUTABLE(logpipe ${sources} ${CMAKE_CURRENT_BINARY_DIR}/mod/parser_apacheclf.c)
 set(EXECUTABLE_OUTPUT_PATH bin/)
-TARGET_LINK_LIBRARIES(apacheclf2json ${CMAKE_CURRENT_BINARY_DIR}/hiredis/libhiredis.a)
-add_dependencies(apacheclf2json hiredis bin-dir)
-INSTALL(TARGETS apacheclf2json DESTINATION bin)
+TARGET_LINK_LIBRARIES(logpipe ${CMAKE_CURRENT_BINARY_DIR}/hiredis/libhiredis.a)
+add_dependencies(logpipe hiredis bin-dir)
+INSTALL(TARGETS logpipe DESTINATION bin)

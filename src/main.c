@@ -1,150 +1,64 @@
-#include "parser.h"
+#include "mod.h"
 
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
 
-#define MAX_LINE_LENGTH 8192
+const logmod_t *builtin_mods[] = {
+  &mod_reset_str,
+  &mod_reset_line,
+  &mod_reset_both,
+  &mod_stdin,
+  &mod_stderr,
+  &mod_stdout,
+  &mod_parse_apacheclf,
+  &mod_print_logstash,
+  &mod_print_hyperstats,
+  NULL
+};
 
-static const char default_rowtype[] = "apacheclf";
-static const char default_format_out[] = "logstash";
-static const char default_format_in[] = "apacheclf";
-static const char default_index_fmt[] = "logstash-%Y.%m.%d";
+static void show_mods() {
+  int i = 0;
+  fprintf(stderr, "Mods:\n\n");
+  while( builtin_mods[i] ) {
+    const logmod_t *mod = builtin_mods[i];
+    if( ! mod->name ) {
+      break;
+    }
+    fprintf(stderr, " - %s\n", mod->name);
+    i++;
+  }
+  fprintf(stderr, "\n");
+}
 
 static void show_help(char *program) {
-    fprintf(stderr, "Usage: %s <options>\n\n", program);
-    fprintf(stderr, "  -h           - Show help\n\n");
-    fprintf(stderr, "  -i <input>   - Input format: apacheclf, wikimedia\n");
-    fprintf(stderr, "                 default: \"%s\"\n\n", default_format_in);
-    fprintf(stderr, "  -o <output>  - Output format: logstash, hyperstats\n");
-    fprintf(stderr, "                 default: \"%s\"\n\n", default_format_out);
-    fprintf(stderr, "  -t <type>    - value of \"_type\" field\n");
-    fprintf(stderr, "                 default: \"%s\"\n\n", default_rowtype);
-    fprintf(stderr, "  -k <fmt>     - index key format, uses strftime\n");
-    fprintf(stderr, "                 default: \"%s\"\n\n", default_index_fmt);
-    fprintf(stderr, "  -a <key=val> - Add extra keypairs to JSON output\n\n");
+    fprintf(stderr, "Usage: %s <steps> ...\n\n", program);
+    show_mods();
 }
 
+int main(int argc, char **argv) {  
+  logstep_t *steps = steps_new(argc-1, (const char **)&argv[1]);
+  if( ! steps ) {
+    show_help(argv[0]);
+    exit(EXIT_FAILURE);
+  }
 
-static int logopt_init(logopt_t *opt, int argc, char **argv) {
-    memset(opt, 0, sizeof(*opt));
-    char c;
-    char *key;
-    char *val;
-    pair_t *pair;
-
-    while( (c = getopt(argc, argv, "ht:i:k:a:o:")) != -1 ) {
-        switch( c) {
-        case 'h':
-            return 0; 
-
-        case 't':
-            opt->rowtype = optarg;
-            break;
-
-        case 'o':
-          opt->format_out = optarg;
-        break;
-
-        case 'i':
-            opt->format_in = optarg;
-            break;
-
-        case 'k':
-            opt->index_fmt = optarg;
-            break;
-
-        case 'a':
-            key = optarg;
-            val = strchr(key, '=');
-            if( val == NULL ) {
-                fprintf(stderr, "Error parsing extra: '%s'\n", optarg);
-                return 0;
-            }
-            val[0] = 0;
-            val++;
-            if( strlen(val) == 0 || strlen(key) == 0 ) {
-                fprintf(stderr, "Error parsing extra: '%s'\n", optarg);
-                return 0;
-            }
-
-            opt->extra_cnt += 1;
-            opt->extra = realloc(opt->extra, sizeof(pair_t) * opt->extra_cnt);
-            pair = &opt->extra[opt->extra_cnt - 1];
-            pair->key.ptr = (unsigned char*)key;
-            pair->key.len = strlen(key);
-            pair->val.ptr = (unsigned char*)val;
-            pair->val.len = strlen(val);
-            break; 
-        }
-    }
-    return 1;
-}
-
-
-int main(int argc, char **argv) {
-  char buf[MAX_LINE_LENGTH];
-  size_t buf_sz;
+  str_t str;
   logline_t line;
-  logopt_t opts;
 
-  if( ! logopt_init(&opts, argc, argv) ) {
+  if( ! steps_init(steps, &str, &line) ) {
     show_help(argv[0]);
-    return 1;
+    exit(EXIT_FAILURE);
   }
 
-  if( opts.format_out == NULL ) {
-    opts.format_out = default_format_out;
+  while( steps_run(steps, &str, &line) ) {
+    // run is synchronous, it will process one message
+    // by performaning each step in sequence.
   }
 
-  if( opts.format_in == NULL ) {
-    opts.format_in = default_format_in;
-  }
+  steps_free(steps);
+  line_free(&line);
+  str_free(&str);
 
-  if( opts.rowtype == NULL ) {
-    opts.rowtype = default_rowtype;
-  }
-
-  if( opts.index_fmt == NULL ) {
-    opts.index_fmt = default_index_fmt;
-  }
-
-  logstash_parse_fn_t parse_fn;
-  if( strcmp("apacheclf", opts.format_in) == 0 ) {
-    parse_fn = logline_parse_apacheclf;
-  }
-  else {
-    fprintf(stderr, "Error: unknown input format '%s'\n", opts.format_in);
-    show_help(argv[0]);
-    return 1;
-  }
-
-  logstash_print_fn_t print_fn;
-  if( strcmp("logstash", opts.format_out) == 0 ) {
-    print_fn = logline_logstash_print;
-  }
-  else if( strcmp("hyperstats", opts.format_out) == 0 ) {
-    print_fn = logline_hyperstats_print;
-  }
-  else {
-    fprintf(stderr, "Error: unknown output format '%s'\n", opts.format_out);
-    show_help(argv[0]);
-    return 1;
-  }
- 
-  /* Reads input lines, outputs parsed lines to stdout
-   * and unparsable lines to stderr.
-   */
-  while(fgets(buf, MAX_LINE_LENGTH, stdin) != NULL) {
-    buf_sz = strlen(buf);
-    logline_line_init(&line, (unsigned char*)buf, buf_sz);
-    if( parse_fn(&line) ) {
-      print_fn(&line, &opts, stdout);
-    }
-    else {
-        fwrite(buf, buf_sz, 1, stderr);
-    }
-  }
-
-  return 0;
+  exit(EXIT_SUCCESS);
 }

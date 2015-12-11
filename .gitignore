@@ -1,9 +1,10 @@
 CMakeCache.txt
 CMakeFiles/
 Makefile
+test/
 cmake_install.cmake
 config.h
-src/parser_apacheclf.c
+mod/parser_apacheclf.c
 bin/*
 *.o
 *.swp

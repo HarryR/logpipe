@@ -1,6 +1,15 @@
-#include "parser.h"
+#include "mod.h"
+#include "md5.h"
 #include <assert.h>
 
+void logline_make_md5(logline_t *line) {
+    md5_state_t ctx;
+    md5_init(&ctx);
+    md5_append(&ctx, line->raw.ptr, line->raw.len);
+    md5_finish(&ctx, line->md5);
+}
+
+// [18/Sep/2011:19:18:28 -0400]
 void logline_parse_timestamp_apacheclf( logline_t *line ) {
     struct tm local_timestamp;
     strptime((char*)line->timestamp.ptr, "%d/%b/%Y:%H:%M:%S %z", &local_timestamp);
@@ -9,15 +18,3 @@ void logline_parse_timestamp_apacheclf( logline_t *line ) {
     gmtime_r(&actual_time, &line->utc_timestamp);
 }
 
-void logline_line_init(logline_t *line, unsigned char* buf, size_t buf_sz) {
-	assert(line);
-	assert(buf);
-	assert(buf_sz);
-    memset(line, 0, sizeof(*line));
-    line->p = buf;
-    line->eof = line->pe = buf + buf_sz;
-    line->ts = line->p;
-    line->raw.ptr = (unsigned char*)buf;
-    line->raw.len = buf_sz;
-  	logline_make_md5(line);
-}
