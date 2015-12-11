@@ -53,8 +53,7 @@ cat test/python.clfjson test/php.clfjson \
 echo Check clfjson full-circle under valgrind
 head -n 1000 $INPUT_APACHECLF \
 | valgrind --leak-check=full ./bin/logpipe \
-	stdin \
-	parse.apacheclf \
+	stdin parse.apacheclf \
 	print.clfjson parse.clfjson \
 > /dev/null
 

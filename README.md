@@ -1,6 +1,6 @@
 # LogPipe
 
-[![Build Status](https://drone.io/github.com/HarryR/apacheclf2json/status.png)](https://drone.io/github.com/HarryR/apacheclf2json/latest)
+[![Build Status](https://drone.io/github.com/HarryR/logpipe/status.png)](https://drone.io/github.com/HarryR/logpipe/latest)
 
 The logfile pipeline allows you to convert Apache Combined Log files
 and quickly convert them into Logstash or Hyperstats format.

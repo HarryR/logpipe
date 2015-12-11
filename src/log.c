@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 const logmod_t *step_findmod(const char *name) {
   const logmod_t *mod = NULL;
