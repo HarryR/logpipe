@@ -1,14 +1,14 @@
+#include "str.h"
 
-#include "core.h"
-
-#include "md5.h"
+#include <stdlib.h>
+#include <string.h>
 
 void str_init(str_t *str) {
     str->ptr = NULL;
     str->len = 0;
 }
 
-void str_free(str_t *str) {
+void str_clear(str_t *str) {
     if( str ) {
         if( str->ptr ) {
             free(str->ptr);
@@ -17,13 +17,18 @@ void str_free(str_t *str) {
     }
 }
 
-int str_append(str_t *str, const char *s, int length) {
+int str_append(str_t *str, const char *data, int length) {
     str->ptr = realloc(str->ptr, str->len + length + 1);
     if( ! str->ptr ) {
-        return 0;
+        str->len = 0;
+        return -1;
     }
-    strncpy((char*)(str->ptr + str->len), s, length);
-    return str->len += length;    
+    memcpy((char*)(str->ptr + str->len), data, length);
+    
+    int old_len = str->len;
+    str->len += length;
+    str->ptr[str->len] = 0;
+    return old_len;
 }
 
 int str_append_str(str_t *str, str_t *b) {

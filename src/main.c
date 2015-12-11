@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+#include <stdlib.h>
 
 const logmod_t *builtin_mods[] = {
   &mod_reset_str,
@@ -12,10 +13,13 @@ const logmod_t *builtin_mods[] = {
   &mod_stderr,
   &mod_stdout,
   &mod_parse_apacheclf,
+  &mod_parse_clfjson,
   &mod_print_logstash,
   &mod_print_hyperstats,
   &mod_print_clfjson,
+  &mod_print_apacheclf,
   &mod_syslog,
+  &mod_debug_line,
   NULL
 };
 
@@ -60,7 +64,7 @@ int main(int argc, char **argv) {
 
   steps_free(steps);
   line_free(&line);
-  str_free(&str);
+  str_clear(&str);
 
   exit(EXIT_SUCCESS);
 }

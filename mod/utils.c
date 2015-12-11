@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <string.h>
 
 #include "mod.h"
 
@@ -6,7 +7,7 @@
 
 static int reset_str(void *ctx, str_t *str, logline_t *line) {
 	if( str ) {
-		str_free(str);
+		str_clear(str);
 	}
 	return 1;
 }
@@ -17,8 +18,7 @@ const logmod_t mod_reset_str = {
 
 static int reset_line(void *ctx, str_t *str, logline_t *line) {
 	if( line ) {		
-		str_free(&line->raw);
-		memset(line, 0, sizeof(*line));
+		line_free(line);
 	}
 	return 1;
 }
@@ -32,4 +32,31 @@ static int reset_both(void *ctx, str_t *str, logline_t *line) {
 }
 const logmod_t mod_reset_both = {
   "reset", NULL, reset_both, NULL
+};
+
+#define PRINT_FIELD(field) { printf(" " #field ": %d \"%.*s\"\n", (int)line->field.len, (int)line->field.len, line->field.ptr); }
+static int debug_line(void *ctx, str_t *str, logline_t *line) {
+	printf("line %p\n", line);
+	PRINT_FIELD(timestamp);
+	PRINT_FIELD(client_ip);
+	PRINT_FIELD(client_identity);
+	PRINT_FIELD(client_auth);
+	PRINT_FIELD(req_verb);
+	PRINT_FIELD(req_path);
+	PRINT_FIELD(req_ver);
+	PRINT_FIELD(resp_status);
+	PRINT_FIELD(resp_size);
+	PRINT_FIELD(req_referrer);
+	PRINT_FIELD(req_agent);
+	PRINT_FIELD(duration);
+	PRINT_FIELD(total_bytes);
+	PRINT_FIELD(result_code);
+	PRINT_FIELD(heir_code);
+	PRINT_FIELD(mime_type);
+	printf("\n");
+	return 0;
+}
+#undef PRINT_FIELD
+const logmod_t mod_debug_line = {
+  "debug.line", NULL, debug_line, NULL
 };

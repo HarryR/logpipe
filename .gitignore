@@ -1,9 +1,11 @@
 CMakeCache.txt
 CMakeFiles/
 Makefile
-test/
 cmake_install.cmake
 config.h
+test/*.apacheclf
+test/*.logstash
+test/*.clfjson
 mod/parser_apacheclf.c
 bin/*
 *.o

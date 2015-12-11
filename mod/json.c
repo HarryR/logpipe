@@ -1,5 +1,6 @@
 #include "mod.h"
 
+#include "json.h"
 #include "jv-utils.h"
 #include "url.h"
 #include "base64.h"
@@ -32,14 +33,16 @@ static void print_strraw(json_printer *jp, str_t *str) {
     json_print_raw(jp, JSON_STRING, (char*)str->ptr, str->len);
 }
 
+/*
 static void logline_print_extra(logopt_t *opt, json_printer *jp) {
 		size_t i;
-        /* Add extra fields to every record (specified via -a on cmdline) */
+        // Add extra fields to every record (specified via -a on cmdline)
         for( i = 0; i < opt->extra_cnt; i++ ) {
             pair_t *pair = &opt->extra[i];
             print_keystr(jp, (char*)pair->key.ptr, &pair->val);
         }
 }
+*/
 
 
 void logline_print_id(logline_t *line, json_printer *jp, const char* key) {
@@ -91,10 +94,15 @@ void logline_print_splitpath(json_printer *jp, char *path, size_t len) {
 	json_print_raw(jp, JSON_ARRAY_END, NULL, 0);	
 }
 
+static 
+int jp_callback (void *ctx, const char *data, uint32_t len) {
+    return str_append(ctx, data, len) >= 0;
+}
+
 static void hyperstats_print(void *ctx, str_t *str, logline_t *line) {
 	json_printer jp;
-	str_free(str);
-	json_print_init(&jp, str_append, str); 
+	str_clear(str);
+	json_print_init(&jp, jp_callback, str); 
 	json_print_raw(&jp, JSON_OBJECT_BEGIN, NULL, 0);
 
 	// "_id": "pJW+IFHwFiWp/GH..."
@@ -165,8 +173,8 @@ const logmod_t mod_print_hyperstats = {
 static int
 logstash_print(void *ctx, str_t *str, logline_t *line) {
     json_printer jp;
-    str_free(str);
-    json_print_init(&jp, str_append, str); 
+    str_clear(str);
+    json_print_init(&jp, jp_callback, str); 
     json_print_raw(&jp, JSON_OBJECT_BEGIN, NULL, 0);
     json_print_key(&jp, "index");
 
@@ -246,7 +254,7 @@ const logmod_t mod_print_logstash = {
 static int
 print_clfjson(void *ctx, str_t *str, logline_t *line) {
     json_printer jp;
-    str_free(str);
+    str_clear(str);
     json_print_init(&jp, str_append, str); 
 
     char timestamp[50];
@@ -254,13 +262,13 @@ print_clfjson(void *ctx, str_t *str, logline_t *line) {
     strftime(timestamp, sizeof(timestamp), "%d/%b/%Y:%H:%M:%S %z", &line->utc_timestamp);
 
     json_print_raw(&jp, JSON_ARRAY_BEGIN, NULL, 0);    
-        logline_print_id(line, &jp, NULL);
-        json_print_raw(&jp, JSON_STRING, timestamp, strlen(timestamp));
         print_strraw(&jp, &line->client_ip);
         print_strraw(&jp, &line->client_identity);
         print_strraw(&jp, &line->client_auth);
-        print_strraw(&jp, &line->req_ver);
+        json_print_raw(&jp, JSON_STRING, timestamp, strlen(timestamp));
         print_strraw(&jp, &line->req_verb);
+        print_strraw(&jp, &line->req_path);
+        print_strraw(&jp, &line->req_ver);
         print_strraw(&jp, &line->resp_status);
         print_strraw(&jp, &line->resp_size);
         if( line->req_referrer.len ) {

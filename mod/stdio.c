@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <string.h>
 
 #include "mod.h"
 
@@ -6,7 +7,7 @@
 
 static int run_FILE_read(FILE *ctx, str_t *str, logline_t *line) {
 	char buf[MAX_LINE_LENGTH];
-	str_free(str);
+	str_clear(str);
 	if( ! fgets(buf, MAX_LINE_LENGTH, ctx) ) {
 		return 0;
 	}
@@ -34,10 +35,9 @@ static int init_FILE_stderr(FILE **ctx, str_t *str, logline_t *line) {
 static int run_FILE_write(FILE *ctx, str_t *str, logline_t *line) {
 	if( str && str->ptr && str->len ) {
 		fwrite(str->ptr, str->len, 1, ctx);
-		if( str->ptr[str->len-1] == '\n' ) {
-			str->ptr[str->len-1] = 0;
+		if( str->ptr[str->len] != '\n' ) {
+			fwrite("\n", 1, 1, ctx);
 		}
-		fwrite("\n", 1, 1, ctx);
 	}
 	return 1;
 }

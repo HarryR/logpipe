@@ -2,7 +2,7 @@
 
 #include "mod.h"
 
-#define SAVE_LINE_STR(field) { line->field.ptr = ts; line->field.len = p - ts; }
+#define SAVE_LINE_STR(field) { str_append(&line->field, (const char*)ts, p - ts); }
 
 %%{
   machine parser_apacheclf;
@@ -25,7 +25,7 @@
   timestamp = [^\]]+
             >mark %{
               SAVE_LINE_STR(timestamp)
-              logline_parse_timestamp_apacheclf(line);
+              line_parse_timestamp_apacheclf(line);
             };
 
   client_identity = [^ ]+ | '-'
@@ -37,7 +37,7 @@
   req_verb = [A-Z]+
             >mark %{ SAVE_LINE_STR(req_verb) };
 
-  req_path = any*
+  req_path = [^ ]+
             >mark %{ SAVE_LINE_STR(req_path) };
 
   req_ver  = [0-9\.]+
@@ -60,7 +60,8 @@
     client_identity    space+
     client_auth        space+
     '[' timestamp ']'    space+
-    '"'+ space* req_verb space+ req_path space+ "HTTP/" req_ver+ space* '"' space+
+    # GET /path HTTP/1.0
+    '"'+ (space* req_verb space+) (req_path space+) ("HTTP/" req_ver space* '"') space+
     resp_status          space+
     resp_size            space+
     # either agent or both agent and referrer are optional
@@ -104,13 +105,16 @@
 static int parse_apacheclf(void *ctx, str_t *str, logline_t *line) {
     int cs;
     unsigned char *p, *pe, *ts, *eof;
+    line_free(line);
+    line_init(line, NULL);
 
-    line_init(line, str);
-    p = line->raw.ptr;
-    eof = pe = line->raw.ptr + line->raw.len;
+    p = str->ptr;
+    eof = pe = str->ptr + str->len;
     ts = p;
+
     %% write init;
-    %% write exec;    
+    %% write exec;
+
     return 1;
 }
 
@@ -118,3 +122,105 @@ const logmod_t mod_parse_apacheclf = {
   "parse.apacheclf", NULL, parse_apacheclf, NULL
 };
 
+
+static int print_apacheclf(void *ctx, str_t *str, logline_t *line) {
+  char timestamp[50];
+  memset(timestamp, 0, sizeof(timestamp));
+  strftime(timestamp, sizeof(timestamp), "%d/%b/%Y:%H:%M:%S %z", &line->utc_timestamp);
+
+  str_clear(str);
+
+  // ip
+  if( ! line->client_ip.len ) {
+    str_append(str, "-", 1);
+  }
+  else {
+    str_append_str(str, &line->client_ip);
+  }
+  str_append(str, " ", 1);
+
+  // ident
+  if( ! line->client_identity.len ) {
+    str_append(str, "-", 1);
+  }
+  else {
+    str_append_str(str, &line->client_identity);
+  }
+  str_append(str, " ", 1);
+
+  // auth
+  if( ! line->client_auth.len ) {
+    str_append(str, "-", 1);
+  }
+  else {
+    str_append_str(str, &line->client_auth);
+  }
+  str_append(str, " ", 1);
+
+  // timestamp
+  str_append(str, "[", 1);
+  str_append(str, timestamp, strlen(timestamp));
+  str_append(str, "] ", 2);
+
+  // "GET ... HTTP/1."
+  str_append(str, "\"", 1);
+  if( ! line->req_verb.len ) {
+    str_append(str, "ERR", 1);
+  }
+  else {
+    str_append_str(str, &line->req_verb);
+  }
+  str_append(str, " ", 1);
+
+  // Path
+  if( ! line->req_path.len ) {
+    str_append(str, "?", 1);
+  }
+  else {
+    str_append_str(str, &line->req_path);
+  }
+  str_append(str, " ", 1);
+
+  // HTTP ver
+  str_append(str, "HTTP/", 5);
+  if( ! line->req_ver.len ) {
+    str_append(str, "?.?", 3);
+  }
+  else {
+    str_append_str(str, &line->req_ver);
+  }
+  str_append(str, "\" ", 2);
+
+  if( ! line->resp_status.len ) {
+    str_append(str, "-", 1);
+  }
+  else {
+    str_append_str(str, &line->resp_status);
+  }
+  str_append(str, " ", 1);
+
+  if( ! line->resp_size.len ) {
+    str_append(str, "-", 1);
+  }
+  else {
+    str_append_str(str, &line->resp_size);
+  }
+  str_append(str, " ", 1);
+
+  if( line->req_referrer.len ) {
+    str_append(str, "\"", 1);
+    str_append_str(str, &line->req_referrer);
+    str_append(str, "\"", 1);
+    if( line->req_agent.len ) {
+      str_append(str, " \"", 2);
+      str_append_str(str, &line->req_agent);
+      str_append(str, "\"", 1);
+    }
+  }
+
+  return 1;
+}
+
+const logmod_t mod_print_apacheclf = {
+  "print.apacheclf", NULL, print_apacheclf, NULL
+};

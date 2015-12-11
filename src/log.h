@@ -1,13 +1,12 @@
 #ifndef LOG_H_
 #define LOG_H_
 
-#include "core.h"
+#include "str.h"
+#include <time.h>
 
 typedef struct {    
 	unsigned char md5[16];
     struct tm utc_timestamp;
-
-    str_t raw;
 
     str_t timestamp;
     str_t client_ip;
@@ -50,5 +49,6 @@ int steps_init(logstep_t *steps, str_t *str, logline_t *line);
 int steps_run(logstep_t *steps, str_t *str, logline_t *line);
 void line_init(logline_t *line, str_t *str);
 void line_free(logline_t *line);
+void line_parse_timestamp_apacheclf( logline_t *line );
 
 #endif
