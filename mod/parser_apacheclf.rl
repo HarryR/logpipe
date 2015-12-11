@@ -19,7 +19,7 @@
   #
   # > and % denote entering and leaving actions respectively, so this machine
   #   will mark and emit each of the following token types as it sees them
-  client_ip = [0-9\.]+
+  client_ip = [0-9\.:]+
             >mark %{ SAVE_LINE_STR(client_ip) };
 
   timestamp = [^\]]+
@@ -28,10 +28,16 @@
               logline_parse_timestamp_apacheclf(line);
             };
 
+  client_identity = [^ ]+ | '-'
+            >mark %{ SAVE_LINE_STR(client_identity) };
+
+  client_auth = [^ ]+ | '-'
+            >mark %{ SAVE_LINE_STR(client_auth) };
+
   req_verb = [A-Z]+
             >mark %{ SAVE_LINE_STR(req_verb) };
 
-  req_path = [^ ]+
+  req_path = any*
             >mark %{ SAVE_LINE_STR(req_path) };
 
   req_ver  = [0-9\.]+
@@ -51,8 +57,8 @@
   # Assemble the components to define a single line
   line = (
     client_ip       space+
-    '-'             space+
-    '-'             space+
+    client_identity    space+
+    client_auth        space+
     '[' timestamp ']'    space+
     '"'+ space* req_verb space+ req_path space+ "HTTP/" req_ver+ space* '"' space+
     resp_status          space+
@@ -74,7 +80,7 @@
         return 1;
       }
 
-    //#if 0
+    #if 0
     // Used when debugging the parser...
     fprintf(stderr, "ip:%d ts:%d vrb:%d pth:%d ver:%d sts:%d siz:%d ref:%d agt:%d\n",
         line->client_ip.len, 
@@ -87,7 +93,7 @@
         line->req_referrer.len,
         line->req_agent.len
     );
-    //#endif
+    #endif
     return 0;
   };
 

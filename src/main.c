@@ -14,6 +14,7 @@ const logmod_t *builtin_mods[] = {
   &mod_parse_apacheclf,
   &mod_print_logstash,
   &mod_print_hyperstats,
+  &mod_syslog,
   NULL
 };
 

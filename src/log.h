@@ -11,6 +11,8 @@ typedef struct {
 
     str_t timestamp;
     str_t client_ip;
+    str_t client_identity;
+    str_t client_auth;
     str_t req_verb;
     str_t req_path;
     str_t req_ver;

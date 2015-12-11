@@ -98,6 +98,6 @@ add_custom_target(bin-dir ALL
 RAGEL_GEN(mod/parser_apacheclf)
 ADD_EXECUTABLE(logpipe ${sources} ${CMAKE_CURRENT_BINARY_DIR}/mod/parser_apacheclf.c)
 set(EXECUTABLE_OUTPUT_PATH bin/)
-#TARGET_LINK_LIBRARIES(logpipe ${CMAKE_CURRENT_BINARY_DIR}/hiredis/libhiredis.a)
+TARGET_LINK_LIBRARIES(logpipe ${CMAKE_CURRENT_BINARY_DIR}/hiredis/libhiredis.a)
 add_dependencies(logpipe hiredis bin-dir)
 INSTALL(TARGETS logpipe DESTINATION bin)

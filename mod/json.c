@@ -184,6 +184,12 @@ logstash_print(void *ctx, str_t *str, logline_t *line) {
          * This format should be auto-detected by elasticsearch
 		 */
         char timestamp[50];
+        memset(timestamp, 0, sizeof(timestamp));
+        strftime(timestamp, sizeof(timestamp), "logstash-%Y.%m.%d", &line->utc_timestamp);
+        json_print_key(&jp, "_index");
+        json_print_raw(&jp, JSON_STRING, timestamp, strlen(timestamp));
+
+        memset(timestamp, 0, sizeof(timestamp));
         strftime(timestamp, sizeof(timestamp), "%Y-%m-%dT%H:%M:%SZ", &line->utc_timestamp);
         json_print_key(&jp, "@timestamp");
         json_print_raw(&jp, JSON_STRING, timestamp, strlen(timestamp));
