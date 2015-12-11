@@ -20,6 +20,7 @@ const logmod_t *builtin_mods[] = {
   &mod_print_apacheclf,
   &mod_syslog,
   &mod_debug_line,
+  &mod_debug_anon,
   NULL
 };
 

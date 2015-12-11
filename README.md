@@ -33,6 +33,7 @@ buffer and fills it with logstash JSON. This could then be printed using `stdout
  * reset.line - Empty line struct
  * reset - Reset both str and line
  * debug.line - Print line status
+ * debug.anon - Anonymize parsed fields
  * stdin - Read line from stdin into buffer
  * stdout - Write buffer to stdout
  * parse.apacheclf - Parse Apache CLF

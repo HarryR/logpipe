@@ -49,6 +49,9 @@ echo Test ensure can parse own output that python and php think is broken
 cat test/python.clfjson test/php.clfjson \
 | ./bin/logpipe stdin parse.clfjson 2>> $REGRESSION_CLFJSON
 
+echo Anonymize can read its own output
+cat test/python.clfjson test/php.clfjson \
+| ./bin/logpipe stdin parse.clfjson debug.anon print.clfjson parse.clfjson 2>> $REGRESSION_CLFJSON
 
 echo Check clfjson full-circle under valgrind
 head -n 1000 $INPUT_APACHECLF \
