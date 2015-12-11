@@ -72,15 +72,15 @@ ENDIF (NOT HAVE_MEMRCHR)
 
 
 
-include(ExternalProject)
-ExternalProject_Add(hiredis
-    DOWNLOAD_DIR ${CMAKE_CURRENT_SOURCE_DIR}/hiredis
-    GIT_REPOSITORY https://github.com/redis/hiredis.git
-    SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/hiredis
-    CONFIGURE_COMMAND true
-    UPDATE_COMMAND true
-    BUILD_COMMAND make -C ${CMAKE_CURRENT_SOURCE_DIR}/hiredis
-    INSTALL_COMMAND true)
+#include(ExternalProject)
+#ExternalProject_Add(hiredis
+#    DOWNLOAD_DIR ${CMAKE_CURRENT_SOURCE_DIR}/hiredis
+#    GIT_REPOSITORY https://github.com/redis/hiredis.git
+#    SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/hiredis
+#    CONFIGURE_COMMAND true
+#    UPDATE_COMMAND true
+#    BUILD_COMMAND make -C ${CMAKE_CURRENT_SOURCE_DIR}/hiredis
+#    INSTALL_COMMAND true)
 
 
 CONFIGURE_FILE (
@@ -88,7 +88,7 @@ CONFIGURE_FILE (
   "${PROJECT_BINARY_DIR}/config.h"
   )
 INCLUDE_DIRECTORIES(${PROJECT_BINARY_DIR})
-INCLUDE_DIRECTORIES(${PROJECT_BINARY_DIR}/hiredis)
+#INCLUDE_DIRECTORIES(${PROJECT_BINARY_DIR}/hiredis)
 INCLUDE_DIRECTORIES(${PROJECT_BINARY_DIR}/extsrc)
 INCLUDE_DIRECTORIES(${PROJECT_BINARY_DIR}/src)
 INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/portable)
@@ -98,6 +98,6 @@ add_custom_target(bin-dir ALL
 RAGEL_GEN(mod/apacheclf)
 ADD_EXECUTABLE(logpipe ${sources} ${CMAKE_CURRENT_BINARY_DIR}/mod/apacheclf.c)
 set(EXECUTABLE_OUTPUT_PATH bin/)
-TARGET_LINK_LIBRARIES(logpipe ${CMAKE_CURRENT_BINARY_DIR}/hiredis/libhiredis.a)
+#TARGET_LINK_LIBRARIES(logpipe ${CMAKE_CURRENT_BINARY_DIR}/hiredis/libhiredis.a)
 add_dependencies(logpipe hiredis bin-dir)
 INSTALL(TARGETS logpipe DESTINATION bin)
