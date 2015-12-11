@@ -6,7 +6,7 @@ config.h
 test/*.apacheclf
 test/*.logstash
 test/*.clfjson
-mod/parser_apacheclf.c
+mod/apacheclf.c
 bin/*
 *.o
 *.swp

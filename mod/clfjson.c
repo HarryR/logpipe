@@ -2,6 +2,46 @@
 #include "jv-utils.h"
 #include "json.h"
 
+static 
+int jp_callback (void *ctx, const char *data, uint32_t len) {
+    return str_append(ctx, data, len) >= 0;
+}
+
+static int
+print_clfjson(void *ctx, str_t *str, logline_t *line) {
+    json_printer jp;
+    str_clear(str);
+    json_print_init(&jp, jp_callback, str); 
+
+    char timestamp[50];
+    memset(timestamp, 0, sizeof(timestamp));
+    strftime(timestamp, sizeof(timestamp), "%d/%b/%Y:%H:%M:%S %z", &line->utc_timestamp);
+
+    json_print_raw(&jp, JSON_ARRAY_BEGIN, NULL, 0);    
+        print_strraw(&jp, &line->client_ip);
+        print_strraw(&jp, &line->client_identity);
+        print_strraw(&jp, &line->client_auth);
+        json_print_raw(&jp, JSON_STRING, timestamp, strlen(timestamp));
+        print_strraw(&jp, &line->req_verb);
+        print_strraw(&jp, &line->req_path);
+        print_strraw(&jp, &line->req_ver);
+        print_strraw(&jp, &line->resp_status);
+        print_strraw(&jp, &line->resp_size);
+        if( line->req_referrer.len ) {
+            print_strraw(&jp, &line->req_referrer);
+            if( line->req_agent.len ) {
+                print_strraw(&jp, &line->req_agent);
+            }
+        }
+    json_print_raw(&jp, JSON_ARRAY_END, NULL, 0);    
+    json_print_free(&jp);
+    return 1;
+}
+const logmod_t mod_print_clfjson = {
+    "print.clfjson", NULL, print_clfjson, NULL
+};
+
+
 typedef struct {
 	int i;
 	int finished;
@@ -19,7 +59,8 @@ typedef struct {
 } clfjson_step_t;
 
 static int
-clfjson_state(clfjson_state_t *state, int type, const char *data, uint32_t length) {
+clfjson_state(void *_state, int type, const char *data, uint32_t length) {
+	clfjson_state_t *state = _state;
 	logline_t *line = state->line;
 	if( state->finished || state->errored ) {
 		return 1;

@@ -17,7 +17,7 @@ void str_clear(str_t *str) {
     }
 }
 
-int str_append(str_t *str, const char *data, int length) {
+int str_append(str_t *str, const char *data, uint32_t length) {
     str->ptr = realloc(str->ptr, str->len + length + 1);
     if( ! str->ptr ) {
         str->len = 0;
@@ -32,5 +32,6 @@ int str_append(str_t *str, const char *data, int length) {
 }
 
 int str_append_str(str_t *str, str_t *b) {
-    return str_append(str, b->ptr, b->len);
+    return str_append(str, (const char *)b->ptr, b->len);
 }
+

@@ -1,9 +1,20 @@
 #include <stdio.h>
 #include <string.h>
+#include <syslog.h>
 
 #include "mod.h"
 
 #define MAX_LINE_LENGTH 8192
+
+static int run_syslog(void *ctx, str_t *str, logline_t *line) {
+	syslog(LOG_ERR, "%.*s", (int)str->len, str->ptr);
+	return 1;
+}
+
+const logmod_t mod_syslog = {
+	"syslog", NULL, &run_syslog, NULL
+};
+
 
 static int reset_str(void *ctx, str_t *str, logline_t *line) {
 	if( str ) {
@@ -59,4 +70,60 @@ static int debug_line(void *ctx, str_t *str, logline_t *line) {
 #undef PRINT_FIELD
 const logmod_t mod_debug_line = {
   "debug.line", NULL, debug_line, NULL
+};
+
+static int run_FILE_read(void *ctx, str_t *str, logline_t *line) {
+	char buf[MAX_LINE_LENGTH];
+	str_clear(str);
+	if( ! fgets(buf, MAX_LINE_LENGTH, ctx) ) {
+		return 0;
+	}
+	size_t len = strlen(buf);
+	if( buf[len-1] == '\n' ) {
+		buf[len-1] = 0;
+	}
+	str_append(str, buf, len);
+	return 1;
+}
+
+static int init_FILE_stdin(void *ctx, str_t *str, logline_t *line) {
+	*((FILE**)ctx) = stdin;
+	return 1;
+}
+static int init_FILE_stdout(void *ctx, str_t *str, logline_t *line) {
+	*((FILE**)ctx) = stdout;
+	return 1;
+}
+static int init_FILE_stderr(void *ctx, str_t *str, logline_t *line) {
+	*((FILE**)ctx) = stderr;
+	return 1;
+}
+
+static int run_FILE_write(void *ctx, str_t *str, logline_t *line) {
+	if( str && str->ptr && str->len ) {
+		fwrite(str->ptr, str->len, 1, ctx);
+		if( str->ptr[str->len] != '\n' ) {
+			fwrite("\n", 1, 1, ctx);
+		}
+	}
+	return 1;
+}
+
+static int stop_FILE(void *ctx, str_t *str, logline_t *line) {
+	if( ctx ) {
+		fclose(ctx);
+	}
+	return 1;
+}
+
+const logmod_t mod_stdin = {
+	"stdin", &init_FILE_stdin, &run_FILE_read, &stop_FILE
+};
+
+const logmod_t mod_stderr = {
+	"stderr", &init_FILE_stderr, &run_FILE_write, &stop_FILE
+};
+
+const logmod_t mod_stdout = {
+	"stdout", &init_FILE_stdout, &run_FILE_write, &stop_FILE
 };

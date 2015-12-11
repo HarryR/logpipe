@@ -46,6 +46,17 @@ buffer and fills it with logstash JSON. This could then be printed using `stdout
 
 It is easy to program custom pipeline modlues, the interface is simple:
 
+	#include "mod.h"
+	#include <syslog.h>
+
+	static int run_syslog(void *ctx, str_t *str, logline_t *line) {
+		syslog(LOG_ERR, "%.*s", (int)str->len, str->ptr);
+		return 1;
+	}
+	const logmod_t mod_syslog = {
+		"syslog", NULL, &run_syslog, NULL
+	};
+
 	static int init(void **ctx, str_t *str, logline_t *line) {
 		*ctx = malloc(...);
 		return 1;
@@ -53,8 +64,12 @@ It is easy to program custom pipeline modlues, the interface is simple:
 	static int test(void *ctx, str_t *str, logline_t *line) {
 		return 1;
 	}
+	static int shutdown(void *ctx, str_t *str, logline_t *line) {
+		free(ctx);
+		return 1;
+	}
 	const logmod_t mod_name = {
-		"name", &init, &test, &test
+		"name", &init, &test, &shutdown
 	};
 
 Then add the module to `src/main.c` and `src/mod.h`.

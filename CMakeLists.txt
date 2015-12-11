@@ -9,7 +9,7 @@ set(CMAKE_CONFIGURATION_TYPES "Debug;Release" CACHE STRING "Limited configuratio
 # Enable extra compiler warnings
 if ("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU" OR
     "${CMAKE_C_COMPILER_ID}" STREQUAL "Clang")
-    set(warnings "-Wall -Wextra")
+    set(warnings "-Wall -Wextra -Wno-unused-parameter")
     set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0 -ggdb")
     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3")
 elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
@@ -95,8 +95,8 @@ INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/portable)
 
 add_custom_target(bin-dir ALL
     COMMAND ${CMAKE_COMMAND} -E make_directory bin/)
-RAGEL_GEN(mod/parser_apacheclf)
-ADD_EXECUTABLE(logpipe ${sources} ${CMAKE_CURRENT_BINARY_DIR}/mod/parser_apacheclf.c)
+RAGEL_GEN(mod/apacheclf)
+ADD_EXECUTABLE(logpipe ${sources} ${CMAKE_CURRENT_BINARY_DIR}/mod/apacheclf.c)
 set(EXECUTABLE_OUTPUT_PATH bin/)
 TARGET_LINK_LIBRARIES(logpipe ${CMAKE_CURRENT_BINARY_DIR}/hiredis/libhiredis.a)
 add_dependencies(logpipe hiredis bin-dir)

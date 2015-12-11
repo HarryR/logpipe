@@ -3,6 +3,8 @@
 
 #include "config.h"
 #include "log.h"
+#include "jsonutils.h"
+#include "url.h"
 
 extern const logmod_t *builtin_mods[];
 
