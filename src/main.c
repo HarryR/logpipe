@@ -21,6 +21,7 @@ const logmod_t *builtin_mods[] = {
   &mod_syslog,
   &mod_debug_line,
   &mod_debug_anon,
+  &mod_debug_randblank,
   NULL
 };
 

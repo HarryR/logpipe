@@ -51,25 +51,34 @@ static int hyperstats_print(void *ctx, str_t *str, logline_t *line) {
 			json_print_raw(&jp, JSON_INT, ts_hour, 2);
 		json_print_raw(&jp, JSON_ARRAY_END, NULL, 0);
 
-        print_keystr(&jp, "req_method", &line->req_verb);
-        print_keystr(&jp, "req_version", &line->req_ver);
+		if( line->req_verb.len ) {
+        	print_keystr(&jp, "req_method", &line->req_verb);
+		}
+		if( line->req_ver.len ) {
+        	print_keystr(&jp, "req_version", &line->req_ver);
+		}
+		if( line->resp_status.len ) {
+        	print_keyraw(&jp, "resp_status", &line->resp_status);
+		}
 	
-		// "req_path": ["/derp", "/test.php"]
-		json_print_key(&jp, "req_path");
-		logline_print_splitpath(&jp, (char*)line->req_path.ptr, line->req_path.len);
-
-        php_url *url = php_url_parse_ex((char*)line->req_referrer.ptr, line->req_referrer.len);
-		if( url != NULL ) {
-			if( url->scheme ) print_keystr2(&jp, "ref_scheme", url->scheme);
-            if( url->host) print_keystr2(&jp, "ref_host", url->host);
-            if( url->path) {
-				json_print_key(&jp, "ref_path");
-				logline_print_splitpath(&jp, url->path, strlen(url->path));
-			}
-			php_url_free(url);
+		if( line->req_path.len ) {			
+			// "req_path": ["/derp", "/test.php"]
+			json_print_key(&jp, "req_path");
+			json_print_splitpath(&jp, (char*)line->req_path.ptr, line->req_path.len);
 		}
 
-        print_keyraw(&jp, "resp_status", &line->resp_status);
+		if( line->req_referrer.len ) {			
+	        php_url *url = php_url_parse_ex((char*)line->req_referrer.ptr, line->req_referrer.len);
+			if( url != NULL ) {
+				if( url->scheme ) print_keystr2(&jp, "ref_scheme", url->scheme);
+	            if( url->host) print_keystr2(&jp, "ref_host", url->host);
+	            if( url->path) {
+					json_print_key(&jp, "ref_path");
+					json_print_splitpath(&jp, url->path, strlen(url->path));
+				}
+				php_url_free(url);
+			}
+		}
 	
 	json_print_raw(&jp, JSON_OBJECT_END, NULL, 0);
 	// }

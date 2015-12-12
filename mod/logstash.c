@@ -32,17 +32,15 @@ logstash_print(void *ctx, str_t *str, logline_t *line) {
         json_print_key(&jp, "@timestamp");
         json_print_raw(&jp, JSON_STRING, timestamp, strlen(timestamp));
 
-        print_keystr(&jp, "client_ip", &line->client_ip);
+        print_optkeystr(&jp, "client_ip", &line->client_ip);
 
         /* "req": {...} */
         json_print_key(&jp, "req");
             json_print_raw(&jp, JSON_OBJECT_BEGIN, NULL, 0);
-            print_keystr(&jp, "verb", &line->req_verb);
-            print_keystr(&jp, "path", &line->req_path);
-            print_keystr(&jp, "ver", &line->req_ver);
-            if( line->req_agent.len ) {
-                print_keystr(&jp, "agent", &line->req_agent);
-            }
+            print_optkeystr(&jp, "verb", &line->req_verb);
+            print_optkeystr(&jp, "path", &line->req_path);
+            print_optkeystr(&jp, "ver", &line->req_ver);
+            print_optkeystr(&jp, "agent", &line->req_agent);            
             json_print_raw(&jp, JSON_OBJECT_END, NULL, 0);
 
         /* "referrer": {...} */
@@ -51,13 +49,13 @@ logstash_print(void *ctx, str_t *str, logline_t *line) {
                 json_print_raw(&jp, JSON_OBJECT_BEGIN, NULL, 0);
                 php_url *url = php_url_parse_ex((char*)line->req_referrer.ptr, line->req_referrer.len);
                 if( url != NULL ) {
-                    if( url->scheme ) print_keystr2(&jp, "scheme", url->scheme);
-                    if( url->user) print_keystr2(&jp, "user", url->user);
-                    if( url->pass) print_keystr2(&jp, "pass", url->pass);
-                    if( url->host) print_keystr2(&jp, "host", url->host);
-                    if( url->path) print_keystr2(&jp, "path", url->path);
-                    if( url->query) print_keystr2(&jp, "query", url->query);
-                    if( url->fragment) print_keystr2(&jp, "fragment", url->fragment);
+                    print_optkeystr2(&jp, "scheme", url->scheme);
+                    print_optkeystr2(&jp, "user", url->user);
+                    print_optkeystr2(&jp, "pass", url->pass);
+                    print_optkeystr2(&jp, "host", url->host);
+                    print_optkeystr2(&jp, "path", url->path);
+                    print_optkeystr2(&jp, "query", url->query);
+                    print_optkeystr2(&jp, "fragment", url->fragment);
                     php_url_free(url);
                 }
                 else {

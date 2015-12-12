@@ -156,12 +156,5 @@ int steps_run(logstep_t *steps, str_t *str, logline_t *line) {
 }
 
 void line_parse_timestamp_apacheclf( logline_t *line ) {
-    if( line->timestamp.ptr ) {     
-        struct tm local_timestamp;
-        strptime((char*)line->timestamp.ptr,
-                 "%d/%b/%Y:%H:%M:%S %z", &local_timestamp);
-        long int gmtoff = local_timestamp.tm_gmtoff;
-        time_t actual_time = timegm(&local_timestamp) - gmtoff;
-        gmtime_r(&actual_time, &line->utc_timestamp);
-    }
+    str_ptime(&line->timestamp, "%d/%b/%Y:%H:%M:%S %z", &line->utc_timestamp);
 }

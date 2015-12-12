@@ -2,7 +2,14 @@
 
 #include "mod.h"
 
-#define SAVE_LINE_STR(field) { str_append(&line->field, (const char*)ts, p - ts); }
+
+static void save_str(str_t *field, const char *data, int len) {
+  if( len == 0 || (len == 1 && data[0] == '-') ) {
+    return;
+  }
+  str_append(field, data, len);
+}
+#define SAVE_LINE_STR(field) { save_str(&line->field, (const char*)ts, p - ts); }
 
 %%{
   machine parser_apacheclf;
@@ -24,14 +31,14 @@
 
   timestamp = [^\]]+
             >mark %{
-              SAVE_LINE_STR(timestamp)
+              SAVE_LINE_STR(timestamp)              
               line_parse_timestamp_apacheclf(line);
             };
 
-  client_identity = [^ ]+ | '-'
+  client_identity = '-' | [^ ]+
             >mark %{ SAVE_LINE_STR(client_identity) };
 
-  client_auth = [^ ]+ | '-'
+  client_auth =  '-' | [^ ]+
             >mark %{ SAVE_LINE_STR(client_auth) };
 
   req_verb = [A-Z]+
@@ -58,17 +65,16 @@
   line = (
     client_ip       space+
     client_identity    space+
-    client_auth        space+
-    '[' timestamp ']'    space+
+    client_auth        space+ 
+    '[' timestamp ']'    space+ <:
     # GET /path HTTP/1.0
-    '"'+ (space* req_verb space+) (req_path space+) ("HTTP/" req_ver space* '"') space+
+    '"'+ (space* req_verb space+ (req_path . space+ "HTTP/") req_ver space* '"') space+ <:
     resp_status          space+
-    resp_size            space+
+    resp_size            space+  <:
     # either agent or both agent and referrer are optional
     # as per the Common Logging spec
     '"' req_referrer '"'     space+
     '"' req_agent '"'
-    ( '\n' )?
   );
 
   main := line $err{
@@ -79,22 +85,7 @@
         && line->req_ver.len
         && line->resp_status.len) {
         return 1;
-      }
-
-    #if 0
-    // Used when debugging the parser...
-    fprintf(stderr, "ip:%d ts:%d vrb:%d pth:%d ver:%d sts:%d siz:%d ref:%d agt:%d\n",
-        line->client_ip.len, 
-        line->timestamp.len,
-        line->req_verb.len,
-        line->req_path.len,
-        line->req_ver.len,
-        line->resp_status.len,
-        line->resp_size.len,
-        line->req_referrer.len,
-        line->req_agent.len
-    );
-    #endif
+    }
     return 0;
   };
 
@@ -174,7 +165,7 @@ static int print_apacheclf(void *ctx, str_t *str, logline_t *line) {
 
   // Path
   if( ! line->req_path.len ) {
-    str_append(str, "?", 1);
+    str_append(str, "-", 1);
   }
   else {
     str_append_str(str, &line->req_path);

@@ -16,6 +16,16 @@ fi
 
 rm -f test/python.* test/php.*
 
+PRINT_FNS="print.apacheclf print.logstash print.hyperstats"
+for PRINT_FN in $PRINT_FNS
+do
+	echo "Test $PRINT_FN with random blanks"
+	cat $INPUT_APACHECLF \
+	| ./bin/logpipe stdin parse.apacheclf \
+					debug.randblank $PRINT_FN \
+	2> /dev/null
+done
+
 echo Test JSONCLF to self
 head -n 10 $INPUT_APACHECLF | valgrind --leak-check=full ./bin/logpipe stdin \
 	parse.apacheclf print.apacheclf parse.apacheclf \
@@ -56,7 +66,7 @@ cat test/python.clfjson test/php.clfjson \
 echo Check clfjson full-circle under valgrind
 head -n 1000 $INPUT_APACHECLF \
 | valgrind --leak-check=full ./bin/logpipe \
-	stdin parse.apacheclf \
+	stdin parse.apacheclf debug.anon \
 	print.clfjson parse.clfjson \
 > /dev/null
 

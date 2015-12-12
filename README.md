@@ -13,14 +13,21 @@ on the commandline, e.g.:
 
 The speed of each step can be measured using the `pv` utlilty:
 
-	$ gzcat test/* | pv -ab | ./bin/logpipe stdin
-	9.25MiB [ 346MiB/s]
+	# Add line to buffer from stdin
+	$ cat test.clf | pv -ab | ./bin/logpipe stdin  &> /dev/null
+	12.3MiB [ 588MiB/s]
 
-	$ gzcat test/* | pv -ab |./bin/logpipe stdin parse.apacheclf
-	9.25MiB [15.9MiB/s]
+	# Parse line, 12x slower than NOOP...
+	cat test.clf | pv -ab | ./bin/logpipe stdin parse.apacheclf &> /dev/null
+	12.3MiB [49.3MiB/s]
 
-	$ gzcat test/* | pv -ab |./bin/logpipe stdin parse.apacheclf print.logstash
-	9.25MiB [5.55MiB/s]
+	# Print apacheclf, 1.5x slower
+	$ cat test.clf | pv -ab | ./bin/logpipe stdin parse.apacheclf print.apacheclf &> /dev/null
+	12.3MiB [30.4MiB/s]
+
+	# Print to stdout, 0x slower
+	$ cat test.clf | pv -ab | ./bin/logpipe stdin parse.apacheclf print.apacheclf stdout &> /dev/null
+	12.3MiB [29.9MiB/s]
 
 The pipeline has a buffer string and line state struct, raw log lines are read
 into the buffer by the `stdin` module, then parsed into the `line` struct 
@@ -34,6 +41,7 @@ buffer and fills it with logstash JSON. This could then be printed using `stdout
  * reset - Reset both str and line
  * debug.line - Print line status
  * debug.anon - Anonymize parsed fields
+ * debug.randblank - Randomly blank fields
  * stdin - Read line from stdin into buffer
  * stdout - Write buffer to stdout
  * parse.apacheclf - Parse Apache CLF

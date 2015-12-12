@@ -26,6 +26,7 @@ extern const logmod_t mod_syslog;
 extern const logmod_t mod_print_clfjson;
 extern const logmod_t mod_debug_line;
 extern const logmod_t mod_debug_anon;
+extern const logmod_t mod_debug_randblank;
 //extern const logmod_t mod_;
 
 #endif

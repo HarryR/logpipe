@@ -47,6 +47,7 @@ const logmod_t mod_reset_both = {
 
 #define PRINT_FIELD(field) { printf(" " #field ": %d \"%.*s\"\n", (int)line->field.len, (int)line->field.len, line->field.ptr); }
 static int debug_line(void *ctx, str_t *str, logline_t *line) {
+	printf("\n");
 	printf("line %p\n", line);
 	PRINT_FIELD(timestamp);
 	PRINT_FIELD(client_ip);
@@ -64,8 +65,7 @@ static int debug_line(void *ctx, str_t *str, logline_t *line) {
 	PRINT_FIELD(result_code);
 	PRINT_FIELD(heir_code);
 	PRINT_FIELD(mime_type);
-	printf("\n");
-	return 0;
+	return 1;
 }
 #undef PRINT_FIELD
 const logmod_t mod_debug_line = {
