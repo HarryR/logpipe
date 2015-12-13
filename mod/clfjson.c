@@ -18,19 +18,19 @@ print_clfjson(void *ctx, str_t *str, logline_t *line) {
     strftime(timestamp, sizeof(timestamp), "%d/%b/%Y:%H:%M:%S %z", &line->utc_timestamp);
 
     json_print_raw(&jp, JSON_ARRAY_BEGIN, NULL, 0);    
-        print_strraw(&jp, &line->client_ip);
-        print_strraw(&jp, &line->client_identity);
-        print_strraw(&jp, &line->client_auth);
+        print_strraw_or_null(&jp, &line->client_ip);
+        print_strraw_or_null(&jp, &line->client_identity);
+        print_strraw_or_null(&jp, &line->client_auth);
         json_print_raw(&jp, JSON_STRING, timestamp, strlen(timestamp));
-        print_strraw(&jp, &line->req_verb);
-        print_strraw(&jp, &line->req_path);
-        print_strraw(&jp, &line->req_ver);
-        print_strraw(&jp, &line->resp_status);
-        print_strraw(&jp, &line->resp_size);
+        print_strraw_or_null(&jp, &line->req_verb);
+        print_strraw_or_null(&jp, &line->req_path);
+        print_strraw_or_null(&jp, &line->req_ver);
+        print_strraw_or_null(&jp, &line->resp_status);
+        print_strraw_or_null(&jp, &line->resp_size);
         if( line->req_referrer.len ) {
-            print_strraw(&jp, &line->req_referrer);
+            print_strraw_or_null(&jp, &line->req_referrer);
             if( line->req_agent.len ) {
-                print_strraw(&jp, &line->req_agent);
+                print_strraw_or_null(&jp, &line->req_agent);
             }
         }
     json_print_raw(&jp, JSON_ARRAY_END, NULL, 0);    
@@ -87,7 +87,7 @@ clfjson_state(void *_state, int type, const char *data, uint32_t length) {
 			state->finished = 1;
 			return 0;
 		}
-		if( type != step->token ) {
+		if( type != step->token && type != JSON_NULL ) {
 			state->errored = 1;
 			state->i++;
 			return 1;
@@ -98,7 +98,7 @@ clfjson_state(void *_state, int type, const char *data, uint32_t length) {
 			state->finished = 1;
 			return 0;
 		}
-		if( step->token != type ) {
+		if( step->token != type && type != JSON_NULL ) {
 			state->errored = 1;
 			state->i++;
 			return 1;
@@ -106,6 +106,9 @@ clfjson_state(void *_state, int type, const char *data, uint32_t length) {
 	}
 	if( step->str ) {
 		// Append to raw buffer, separated by \0, save in ptr
+		if( type == JSON_NULL ) {
+			str_clear(step->str);
+		}
 		str_append(step->str, data, length);
 	}
 	state->i++;

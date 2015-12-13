@@ -13,5 +13,6 @@ void logline_print_id(logline_t *line, json_printer *jp, const char* key);
 void json_print_splitpath(json_printer *jp, char *path, size_t len);
 void print_optkeystr2(json_printer *jp, char *key, char* str);
 void print_optkeystr(json_printer *jp, char *key, str_t *str);
+void print_strraw_or_null(json_printer *jp, str_t *str);
 
 #endif

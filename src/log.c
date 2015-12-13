@@ -156,5 +156,10 @@ int steps_run(logstep_t *steps, str_t *str, logline_t *line) {
 }
 
 void line_parse_timestamp_apacheclf( logline_t *line ) {
+  if( ! str_isempty(&line->timestamp) ) {
     str_ptime(&line->timestamp, "%d/%b/%Y:%H:%M:%S %z", &line->utc_timestamp);
+  }
+  else {
+    memset(&line->utc_timestamp, 0, sizeof(line->utc_timestamp));
+  }
 }

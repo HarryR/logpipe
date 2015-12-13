@@ -44,6 +44,14 @@ void print_strraw(json_printer *jp, str_t *str) {
     json_print_raw(jp, JSON_STRING, (char*)str->ptr, str->len);
 }
 
+void print_strraw_or_null(json_printer *jp, str_t *str) {
+	if( str && str->len && str->ptr ) {
+    	json_print_raw(jp, JSON_STRING, (char*)str->ptr, str->len);
+	}
+	else {
+		json_print_raw(jp, JSON_INT, "null", 4);
+	}
+}
 
 void logline_print_id(logline_t *line, json_printer *jp, const char* key) {
     char b64[BASE64_SIZE(16)];

@@ -17,6 +17,7 @@ typedef struct {
     struct pair_t *next;
 } pair_t;
 
+int str_isempty(const str_t *str);
 str_t str_clone(const str_t *input);
 int str_append(str_t *str, const char *s, uint32_t length);
 int str_append_str(str_t *str, const str_t *b);

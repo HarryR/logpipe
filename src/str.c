@@ -5,7 +5,7 @@
 #include <assert.h>
 
 int str_isempty(const str_t *str) {
-    return str && str->ptr && str->len;
+    return ! str || ! str->ptr || str->len < 1;
 }
 
 void str_init(str_t *str) {

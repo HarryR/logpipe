@@ -27,7 +27,7 @@ do
 done
 
 echo Test JSONCLF to self
-head -n 10 $INPUT_APACHECLF | valgrind --leak-check=full ./bin/logpipe stdin \
+head -n 10 $INPUT_APACHECLF | ./bin/logpipe stdin \
 	parse.apacheclf print.apacheclf parse.apacheclf \
 	print.clfjson parse.clfjson \
 	2> /dev/null 
@@ -63,6 +63,10 @@ echo Anonymize can read its own output
 cat test/python.clfjson test/php.clfjson \
 | ./bin/logpipe stdin parse.clfjson debug.anon print.clfjson parse.clfjson 2>> $REGRESSION_CLFJSON
 
+echo "clfjson regression rate:"
+wc -l $REGRESSION_CLFJSON
+echo
+
 echo Check clfjson full-circle under valgrind
 head -n 1000 $INPUT_APACHECLF \
 | valgrind --leak-check=full ./bin/logpipe \
@@ -70,6 +74,4 @@ head -n 1000 $INPUT_APACHECLF \
 	print.clfjson parse.clfjson \
 > /dev/null
 
-echo "clfjson regression rate:"
-wc -l $REGRESSION_CLFJSON
-echo
+
