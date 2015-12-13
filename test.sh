@@ -63,15 +63,16 @@ echo Anonymize can read its own output
 cat test/python.clfjson test/php.clfjson \
 | ./bin/logpipe stdin parse.clfjson debug.anon print.clfjson parse.clfjson 2>> $REGRESSION_CLFJSON
 
+which valgrind
+if [ $? -eq 0 ]; then
+	echo Check clfjson full-circle under valgrind
+	head -n 1000 $INPUT_APACHECLF \
+	| valgrind --leak-check=full ./bin/logpipe \
+		stdin parse.apacheclf debug.anon \
+		print.clfjson parse.clfjson \
+	> /dev/null
+fi
+
 echo "clfjson regression rate:"
 wc -l $REGRESSION_CLFJSON
 echo
-
-echo Check clfjson full-circle under valgrind
-head -n 1000 $INPUT_APACHECLF \
-| valgrind --leak-check=full ./bin/logpipe \
-	stdin parse.apacheclf debug.anon \
-	print.clfjson parse.clfjson \
-> /dev/null
-
-
