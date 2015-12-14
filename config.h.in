@@ -1,7 +1,13 @@
 #ifndef CONFIG_H_IN_
 #define CONFIG_H_IN_
 
+#ifndef _GNU_SOURCE
 #cmakedefine _GNU_SOURCE
+#endif
+
+#ifndef _XOPEN_SOURCE
+#cmakedefine _XOPEN_SOURCE
+#endif
 
 #cmakedefine HAVE_MEMRCHR
 #cmakedefine HAVE_TIMEGM

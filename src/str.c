@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#include <time.h>
 
 int str_isempty(const str_t *str) {
     return ! str || ! str->ptr || str->len < 1;

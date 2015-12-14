@@ -41,12 +41,27 @@ INCLUDE(CheckFunctionExists)
 include(CheckCSourceCompiles)
 check_c_source_compiles("
 #include <features.h>
-#ifndef __GNU_LIBRARY__
+#ifndef _GNU_SOURCE
 #error no gnu here
 #endif
+int main() {}
 " _GNU_SOURCE)
 if (_GNU_SOURCE)
     add_definitions(-D_GNU_SOURCE)
+endif()
+
+#
+# Check if _XOPEN_SOURCE is available.
+# This is required for strptime.h on Linux
+check_c_source_compiles("
+#include <features.h>
+#ifndef _XOPEN_SOURCE
+#error no xopen here
+#endif
+int main() {}
+" _XOPEN_SOURCE)
+if (_XOPEN_SOURCE)
+    add_definitions(-D_XOPEN_SOURCE)
 endif()
 
 

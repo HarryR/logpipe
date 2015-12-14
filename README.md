@@ -34,6 +34,13 @@ into the buffer by the `stdin` module, then parsed into the `line` struct
 by `parse.apacheclf`, and then the `pring.logstash` module resets the string
 buffer and fills it with logstash JSON. This could then be printed using `stdout`.
 
+## Getting Started
+
+    sudo apt-get install zzuf cmake ragel
+    cmake .
+    make
+    ./test.sh
+
 ## Commands
 
  * reset.str - Empty string buffer
