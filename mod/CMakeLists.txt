@@ -35,4 +35,3 @@ add_custom_target(ragel_graphs
 set(mod_sources ${mod_sources} apacheclf.c squid.c)
 
 add_library(logpipe_mod STATIC ${mod_sources})
-target_link_libraries(logpipe_mod logpipe_ext)
