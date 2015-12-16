@@ -13,11 +13,11 @@
 #cmakedefine HAVE_TIMEGM
 
 #ifndef HAVE_MEMRCHR
-#include "memrchr.h"
+#include "portable/memrchr.h"
 #endif
 
 #ifndef HAVE_TIMEGM
-#include "timegm.h"
+#include "portable/timegm.h"
 #endif
 
 

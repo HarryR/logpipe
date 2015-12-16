@@ -88,7 +88,7 @@ It is easy to program custom pipeline modlues, the interface is simple:
 		"name", &init, &test, &shutdown
 	};
 
-Then add the module to `src/main.c` and `src/mod.h`.
+Then add the module to `logpipe.c` and `src/mod.h`.
 
 Each module has a name, an init function which takes a pointer to the place that it should create its context pointer, then the run and shutdown functions which are given the context pointer directly.
 

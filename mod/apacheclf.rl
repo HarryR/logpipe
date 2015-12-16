@@ -32,7 +32,7 @@ static void save_str(str_t *field, const char *data, int len) {
   timestamp = [^\]]+
             >mark %{
               SAVE_LINE_STR(timestamp)              
-              line_parse_timestamp_apacheclf(line);
+              str_ptime_rfc1123(&line->timestamp, &line->utc_timestamp);
             };
 
   client_identity = '-' | [^ ]+

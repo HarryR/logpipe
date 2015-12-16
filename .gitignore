@@ -6,6 +6,8 @@ config.h
 test/*.apacheclf
 test/*.logstash
 test/*.clfjson
+test/*.squid
+mod/squid.c
 mod/apacheclf.c
 bin/*
 *.o
@@ -14,3 +16,6 @@ apacheclf2json
 *.log
 hiredis/
 hiredis-prefix/
+CTestTestfile.cmake
+Testing/
+*.a

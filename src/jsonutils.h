@@ -4,6 +4,8 @@
 #include "str.h"
 #include "json.h"
 
+#include "log.h"
+
 int json_print_key(json_printer *printer, const char *key);
 void print_keystr(json_printer *jp, char *key, str_t *str);
 void print_keystr2(json_printer *jp, char *key, char* str);

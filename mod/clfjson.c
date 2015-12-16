@@ -124,7 +124,7 @@ parse_clfjson(void *ctx, str_t *str, logline_t *line) {
 	line_init(line, str);
 	json_parser_init(&parser, NULL, clfjson_state, &state);
 	json_parser_string(&parser, (const char *)str->ptr, str->len, &processed);
-	line_parse_timestamp_apacheclf(line);
+	str_ptime_rfc1123(&line->timestamp, &line->utc_timestamp);
 	json_parser_free(&parser);
 	return line->client_ip.len
         && line->timestamp.len

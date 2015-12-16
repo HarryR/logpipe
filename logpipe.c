@@ -13,11 +13,13 @@ const logmod_t *builtin_mods[] = {
   &mod_stderr,
   &mod_stdout,
   &mod_parse_apacheclf,
+  &mod_print_apacheclf,
+  &mod_parse_squid,
+  &mod_print_squid,
   &mod_parse_clfjson,
+  &mod_print_clfjson,
   &mod_print_logstash,
   &mod_print_hyperstats,
-  &mod_print_clfjson,
-  &mod_print_apacheclf,
   &mod_syslog,
   &mod_debug_line,
   &mod_debug_anon,
@@ -45,7 +47,7 @@ static void show_help(char *program) {
 }
 
 int main(int argc, char **argv) {  
-  logstep_t *steps = steps_new(argc-1, (const char **)&argv[1]);
+  logstep_t *steps = steps_new(builtin_mods, argc-1, (const char **)&argv[1]);
   if( ! steps ) {
     show_help(argv[0]);
     exit(EXIT_FAILURE);

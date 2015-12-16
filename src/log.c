@@ -1,12 +1,14 @@
+#include "log.h"
 #include "mod.h"
 #include "md5.h"
+
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
 
-const logmod_t *step_findmod(const char *name) {
+const logmod_t *step_findmod(const logmod_t **mods, const char *name) {
   const logmod_t *mod = NULL;
   const char *name_end = name;
   while( isalnum(*name_end) && *name_end != '.' ) {
@@ -49,13 +51,13 @@ void steps_free(logstep_t *steps) {
   }
 }
 
-logstep_t *steps_new(int argc, const char **argv) {
+logstep_t *steps_new(const logmod_t **mods, int argc, const char **argv) {
     logstep_t *steps = NULL;
     size_t count = 0;
     int i;
 
     for( i = 0; i < argc; i++ ) {
-      const logmod_t *mod = step_findmod(argv[i]);
+      const logmod_t *mod = step_findmod(mods, argv[i]);
       if( ! mod ) {
         fprintf(stderr, "Error: unknown step '%s'\n", argv[i]);
         return NULL;
@@ -100,8 +102,8 @@ void line_free(logline_t *line) {
 
     // Squid options 
     str_clear(&line->duration);
-    str_clear(&line->total_bytes);
-    str_clear(&line->result_code);
+    str_clear(&line->resp_bytes);
+    str_clear(&line->resp_cache);
     str_clear(&line->heir_code);
     str_clear(&line->mime_type);
   }
@@ -155,9 +157,16 @@ int steps_run(logstep_t *steps, str_t *str, logline_t *line) {
   return ret;
 }
 
-void line_parse_timestamp_apacheclf( logline_t *line ) {
+void line_parse_timestamp_epoch_secs( logline_t *line ) {
   if( ! str_isempty(&line->timestamp) ) {
-    str_ptime(&line->timestamp, "%d/%b/%Y:%H:%M:%S %z", &line->utc_timestamp);
+    char *pos = str_rpos(&line->timestamp, '.');
+    if( pos ) {
+      *pos = 0;
+    }    
+    str_ptime(&line->timestamp, "%s", &line->utc_timestamp);
+    if( pos ) {
+      *pos = '.';
+    }
   }
   else {
     memset(&line->utc_timestamp, 0, sizeof(line->utc_timestamp));

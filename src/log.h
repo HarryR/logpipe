@@ -12,18 +12,24 @@ typedef struct {
     str_t client_ip;
     str_t client_identity;
     str_t client_auth;
+
     str_t req_verb;
     str_t req_path;
     str_t req_ver;
+
+    // Cache response code, e.g. 'TCP_HIT'
+    str_t resp_cache;
+
+    // Response status code (e.g '200')
     str_t resp_status;
     str_t resp_size;
+
     str_t req_referrer;
     str_t req_agent;
 
     // Squid options 
     str_t duration;     // request duration
-    str_t total_bytes;  // total bytes transferred
-    str_t result_code;  // Squid result code
+    str_t resp_bytes;  // total bytes transferred
     str_t heir_code;    // Hierarchy code
     str_t mime_type;    // Hierarchy code
 } logline_t;
@@ -42,13 +48,14 @@ typedef struct {
     void *ctx;
 } logstep_t;
 
-const logmod_t *step_findmod(const char *name);
+const logmod_t *step_findmod(const logmod_t **mods, const char *name);
 void steps_free(logstep_t *steps);
-logstep_t *steps_new(int argc, const char **argv);
+logstep_t *steps_new(const logmod_t **mods, int argc, const char **argv);
 int steps_init(logstep_t *steps, str_t *str, logline_t *line);
 int steps_run(logstep_t *steps, str_t *str, logline_t *line);
 void line_init(logline_t *line, str_t *str);
 void line_free(logline_t *line);
 void line_parse_timestamp_apacheclf( logline_t *line );
+void line_parse_timestamp_epoch_secs( logline_t *line );
 
 #endif

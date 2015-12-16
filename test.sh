@@ -1,16 +1,27 @@
 #!/bin/bash
 INPUT_APACHECLF=test/all.apacheclf
+INPUT_SQUID=test/all.squid
 REGRESSION_CLFJSON=test/regression.clfjson
 
 if [ ! -f $INPUT_APACHECLF ]; then
 	URLS="http://www.thelyric.com/pics/_/logs/thelyric.com/http.4740641.bak/access.log.2011-08-15
-		 http://www.evolveplasticmd.com/evolveplasticmd.com/log/20140428-access.log
-		 http://www.sankus.com/log/access.log
-		 http://www.swanksalon.info/logs/access.log
-		 http://www.amore-restaurant.co.uk/log/access.log"
+		  http://www.evolveplasticmd.com/evolveplasticmd.com/log/20140428-access.log
+		  http://www.sankus.com/log/access.log
+		  http://www.swanksalon.info/logs/access.log
+		  http://www.amore-restaurant.co.uk/log/access.log"
 	for URL in $URLS; do
-		echo "Retrieving $URL"
-		curl $URL >> $INPUT_APACHECLF
+		echo "Retrieving test ApacheCLF log from: $URL"
+		curl -s $URL >> $INPUT_APACHECLF
+	done
+fi
+
+if [ ! -f $INPUT_SQUID ]; then
+	URLS="http://minkirri.apana.org.au/~abo/projects/squid/access.log
+		  http://www2.contilnet.com.br/~Curso_Tecnico/notas/access.log
+		  http://www.stillhq.com/extracted/sqrad/access.log"
+	for URL in $URLS; do
+		echo "Retrieving test Squid log from: $URL"
+		curl -s $URL >> $INPUT_SQUID
 	done
 fi
 

@@ -61,8 +61,8 @@ static int debug_line(void *ctx, str_t *str, logline_t *line) {
 	PRINT_FIELD(req_referrer);
 	PRINT_FIELD(req_agent);
 	PRINT_FIELD(duration);
-	PRINT_FIELD(total_bytes);
-	PRINT_FIELD(result_code);
+	PRINT_FIELD(resp_bytes);
+	PRINT_FIELD(resp_cache);
 	PRINT_FIELD(heir_code);
 	PRINT_FIELD(mime_type);
 	return 1;

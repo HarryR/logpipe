@@ -90,8 +90,8 @@ debug_randblank(void *ctx, str_t *str, logline_t *line) {
   anon_blank(&line->req_referrer);
   anon_blank(&line->req_agent);
   anon_blank(&line->duration);
-  anon_blank(&line->total_bytes);
-  anon_blank(&line->result_code);
+  anon_blank(&line->resp_bytes);
+  anon_blank(&line->resp_cache);
   anon_blank(&line->heir_code);
   anon_blank(&line->mime_type);
   return 1;
