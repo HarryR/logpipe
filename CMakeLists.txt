@@ -22,6 +22,9 @@ add_executable(test_str test/test_str.c src/str.c)
 add_dependencies(test_str test_str)
 add_test(test_str bin/test_str)
 target_link_libraries(test_str logpipe_core)
+if (CMAKE_SYSTEM_NAME MATCHES "Linux")
+    target_link_libraries(test_str -lrt)
+endif ()
 
 add_custom_target(bin-dir ALL
     COMMAND ${CMAKE_COMMAND} -E make_directory bin/)
