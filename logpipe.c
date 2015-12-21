@@ -1,31 +1,11 @@
-#include "mod.h"
+#include "logpipe.h"
+#include "logpipe-module.h"
 
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
 #include <stdlib.h>
 
-const logmod_t *builtin_mods[] = {
-  &mod_reset_str,
-  &mod_reset_line,
-  &mod_reset_both,
-  &mod_stdin,
-  &mod_stderr,
-  &mod_stdout,
-  &mod_parse_apacheclf,
-  &mod_print_apacheclf,
-  &mod_parse_squid,
-  &mod_print_squid,
-  &mod_parse_clfjson,
-  &mod_print_clfjson,
-  &mod_print_logstash,
-  &mod_print_hyperstats,
-  &mod_syslog,
-  &mod_debug_line,
-  &mod_debug_anon,
-  &mod_debug_randblank,
-  NULL
-};
 
 static void show_mods() {
   int i = 0;
@@ -41,34 +21,36 @@ static void show_mods() {
   fprintf(stderr, "\n");
 }
 
+
 static void show_help(char *program) {
-    fprintf(stderr, "Usage: %s <steps> ...\n\n", program);
+    fprintf(stderr, "Usage: %s <step> [step ...]\n\n", program);
     show_mods();
 }
 
-int main(int argc, char **argv) {  
-  logstep_t *steps = steps_new(builtin_mods, argc-1, (const char **)&argv[1]);
-  if( ! steps ) {
+
+static logpipe_t *logpipe = NULL;
+static void do_cleanup (void) {
+  logpipe_destroy(logpipe);
+}
+
+
+int main(int argc, char **argv) {
+  if( argc < 2 ) {
     show_help(argv[0]);
     exit(EXIT_FAILURE);
   }
 
-  str_t str;
-  logline_t line;
-
-  if( ! steps_init(steps, &str, &line) ) {
-    show_help(argv[0]);
-    exit(EXIT_FAILURE);
+  logpipe = logpipe_new();
+  int i;
+  atexit(do_cleanup);
+  for( i = 1; i < argc; i++ ) {
+    if( logpipe_steps_add(logpipe, argv[i]) <= 0 ) {
+      fprintf(stderr, "Error initialising module:\n  %s\n", argv[i]);
+      exit(EXIT_FAILURE);
+    }
   }
 
-  while( steps_run(steps, &str, &line) ) {
-    // run is synchronous, it will process one message
-    // by performaning each step in sequence.
-  }
-
-  steps_free(steps);
-  line_free(&line);
-  str_clear(&str);
+  logpipe_run_forever(logpipe);
 
   exit(EXIT_SUCCESS);
 }

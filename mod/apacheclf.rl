@@ -1,6 +1,7 @@
 #include <time.h>
+#include <string.h>
 
-#include "mod.h"
+#include "logpipe-module.h"
 
 
 static void save_str(str_t *field, const char *data, int len) {
@@ -122,7 +123,7 @@ static int print_apacheclf(void *ctx, str_t *str, logline_t *line) {
   str_clear(str);
 
   // ip
-  if( ! line->client_ip.len ) {
+  if( str_isempty(&line->client_ip) ) {
     str_append(str, "-", 1);
   }
   else {
@@ -131,7 +132,7 @@ static int print_apacheclf(void *ctx, str_t *str, logline_t *line) {
   str_append(str, " ", 1);
 
   // ident
-  if( ! line->client_identity.len ) {
+  if( str_isempty(&line->client_identity) ) {
     str_append(str, "-", 1);
   }
   else {
@@ -140,7 +141,7 @@ static int print_apacheclf(void *ctx, str_t *str, logline_t *line) {
   str_append(str, " ", 1);
 
   // auth
-  if( ! line->client_auth.len ) {
+  if( str_isempty(&line->client_auth) ) {
     str_append(str, "-", 1);
   }
   else {
@@ -155,7 +156,7 @@ static int print_apacheclf(void *ctx, str_t *str, logline_t *line) {
 
   // "GET ... HTTP/1."
   str_append(str, "\"", 1);
-  if( ! line->req_verb.len ) {
+  if( str_isempty(&line->req_verb) ) {
     str_append(str, "ERR", 1);
   }
   else {
@@ -164,7 +165,7 @@ static int print_apacheclf(void *ctx, str_t *str, logline_t *line) {
   str_append(str, " ", 1);
 
   // Path
-  if( ! line->req_path.len ) {
+  if( str_isempty(&line->req_path) ) {
     str_append(str, "-", 1);
   }
   else {
@@ -174,7 +175,7 @@ static int print_apacheclf(void *ctx, str_t *str, logline_t *line) {
 
   // HTTP ver
   str_append(str, "HTTP/", 5);
-  if( ! line->req_ver.len ) {
+  if( str_isempty(&line->req_ver) ) {
     str_append(str, "?.?", 3);
   }
   else {
@@ -182,7 +183,7 @@ static int print_apacheclf(void *ctx, str_t *str, logline_t *line) {
   }
   str_append(str, "\" ", 2);
 
-  if( ! line->resp_status.len ) {
+  if( str_isempty(&line->resp_status) ) {
     str_append(str, "-", 1);
   }
   else {
@@ -190,7 +191,7 @@ static int print_apacheclf(void *ctx, str_t *str, logline_t *line) {
   }
   str_append(str, " ", 1);
 
-  if( ! line->resp_size.len ) {
+  if( str_isempty(&line->resp_size) ) {
     str_append(str, "-", 1);
   }
   else {
@@ -198,11 +199,11 @@ static int print_apacheclf(void *ctx, str_t *str, logline_t *line) {
   }
   str_append(str, " ", 1);
 
-  if( line->req_referrer.len ) {
+  if( ! str_isempty(&line->req_referrer) ) {
     str_append(str, "\"", 1);
     str_append_str(str, &line->req_referrer);
     str_append(str, "\"", 1);
-    if( line->req_agent.len ) {
+    if( ! str_isempty(&line->req_agent) ) {
       str_append(str, " \"", 2);
       str_append_str(str, &line->req_agent);
       str_append(str, "\"", 1);

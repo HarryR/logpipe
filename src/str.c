@@ -21,6 +21,13 @@ char *str_ptr(str_t *str) {
     return NULL;
 }
 
+char str_char(str_t *str, size_t offset) {
+    if( str_isempty(str) || offset >= str_len(str) ) {
+        return 0;
+    }
+    return str->ptr[offset];
+}
+
 char *str_rpos(str_t *str, const char c) {
     assert( str );
     if( ! str->len || ! str->ptr ) {
@@ -38,11 +45,11 @@ void str_clear(str_t *str) {
     }
 }
 
-int str_len(const str_t *str) {
-    if( ! str_isempty(str) ) {
-        return str->len;
+size_t str_len(const str_t *str) {
+    if( str_isempty(str) ) {
+        return 0;
     }
-    return 0;
+    return str->len;
 }
 
 int str_append(str_t *str, const char *data, uint32_t length) {

@@ -1,4 +1,5 @@
-#include "mod.h"
+#include "logpipe-module.h"
+#include "jsonutils.h"
 #include "jv-utils.h"
 #include "json.h"
 

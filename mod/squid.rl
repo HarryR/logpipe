@@ -1,6 +1,7 @@
 #include <time.h>
+#include <string.h>
 
-#include "mod.h"
+#include "logpipe-module.h"
 
 #define PRINT_FIELD(field) { printf(" " #field ": %d \"%.*s\"\n", (int)line->field.len, (int)line->field.len, line->field.ptr); }
 
@@ -45,7 +46,7 @@ static void save_str(str_t *field, const char *data, int len) {
   # as headers are also counted. Also, failed requests may
   # deliver an error page, the size of which is also logged here.
   bytes = [0-9]+
-            >mark %{ SAVE_LINE_STR(resp_bytes) };
+            >mark %{ SAVE_LINE_STR(resp_size) };
 
   # request method - e.g. GET POST, ICP_QUERY
   req_verb = [a-zA-Z:\-_]+
@@ -65,8 +66,8 @@ static void save_str(str_t *field, const char *data, int len) {
   client_auth = [^ ]+
             >mark %{ SAVE_LINE_STR(client_auth) };
 
-  heir_code = [^ ]+
-            >mark %{ SAVE_LINE_STR(heir_code) };
+  hier_code = [^ ]+
+            >mark %{ SAVE_LINE_STR(hier_code) };
 
   mime_type = [^ ]+
             >mark %{ SAVE_LINE_STR(mime_type) };
@@ -82,7 +83,7 @@ static void save_str(str_t *field, const char *data, int len) {
     req_verb space+
     req_path space+
     client_auth space+
-    heir_code space+
+    hier_code space+
     mime_type
   );
 
@@ -95,10 +96,10 @@ static void save_str(str_t *field, const char *data, int len) {
         && str_len(&line->client_ip)
         && str_len(&line->resp_cache)
         && str_len(&line->resp_status)
-        && str_len(&line->resp_bytes)
+        && str_len(&line->resp_size)
         && str_len(&line->req_verb)
         && str_len(&line->req_path)
-        && str_len(&line->heir_code);
+        && str_len(&line->hier_code);
   };
 
   write data;
@@ -176,11 +177,11 @@ static int print_squid(void *ctx, str_t *str, logline_t *line) {
   }
   str_append(str, " ", 1);
 
-  if( ! str_len(&line->resp_bytes) ) {
+  if( ! str_len(&line->resp_size) ) {
     str_append(str, "-", 1);
   }
   else {
-    str_append_str(str, &line->resp_bytes);
+    str_append_str(str, &line->resp_size);
   }
   str_append(str, " ", 1);
 
@@ -208,11 +209,11 @@ static int print_squid(void *ctx, str_t *str, logline_t *line) {
   }
   str_append(str, " ", 1);
 
-  if( ! str_len(&line->heir_code) ) {
+  if( ! str_len(&line->hier_code) ) {
     str_append(str, "-", 1);
   }
   else {
-    str_append_str(str, &line->heir_code);
+    str_append_str(str, &line->hier_code);
   }
   str_append(str, " ", 1);
 

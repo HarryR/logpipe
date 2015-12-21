@@ -1,4 +1,6 @@
-#include "mod.h"
+#include "logpipe-module.h"
+#include "jsonutils.h"
+#include "url.h"
 
 static 
 int jp_callback (void *ctx, const char *data, uint32_t len) {

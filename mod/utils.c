@@ -2,12 +2,12 @@
 #include <string.h>
 #include <syslog.h>
 
-#include "mod.h"
+#include "logpipe-module.h"
 
 #define MAX_LINE_LENGTH 8192
 
 static int run_syslog(void *ctx, str_t *str, logline_t *line) {
-	syslog(LOG_ERR, "%.*s", (int)str->len, str->ptr);
+	syslog(LOG_ERR, "%.*s", (int)str_len(str), str_ptr(str));
 	return 1;
 }
 
@@ -61,9 +61,8 @@ static int debug_line(void *ctx, str_t *str, logline_t *line) {
 	PRINT_FIELD(req_referrer);
 	PRINT_FIELD(req_agent);
 	PRINT_FIELD(duration);
-	PRINT_FIELD(resp_bytes);
 	PRINT_FIELD(resp_cache);
-	PRINT_FIELD(heir_code);
+	PRINT_FIELD(hier_code);
 	PRINT_FIELD(mime_type);
 	return 1;
 }
@@ -100,9 +99,9 @@ static int init_FILE_stderr(void *ctx, str_t *str, logline_t *line) {
 }
 
 static int run_FILE_write(void *ctx, str_t *str, logline_t *line) {
-	if( str && str->ptr && str->len ) {
-		fwrite(str->ptr, str->len, 1, ctx);
-		if( str->ptr[str->len] != '\n' ) {
+	if( ! str_isempty(str) ) {
+		fwrite(str_ptr(str), str_len(str), 1, ctx);
+		if( str_char(str, str_len(str)) != '\n' ) {
 			fwrite("\n", 1, 1, ctx);
 		}
 	}

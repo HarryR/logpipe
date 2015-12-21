@@ -1,6 +1,8 @@
 # LogPipe
 
 [![Build Status](https://drone.io/github.com/HarryR/logpipe/status.png)](https://drone.io/github.com/HarryR/logpipe/latest)
+[![Build Status](https://semaphoreci.com/api/v1/projects/009f6bc1-43e6-4ab1-8b3a-50cc19cccaa8/633027/badge.svg)](https://semaphoreci.com/harryr/logpipe)
+[![Build Status](https://travis-ci.org/HarryR/logpipe.svg)](https://travis-ci.org/HarryR/logpipe)
 
 The logfile pipeline allows you to convert Apache Combined Log files
 and quickly convert them into Logstash or Hyperstats format.
@@ -62,11 +64,11 @@ buffer and fills it with logstash JSON. This could then be printed using `stdout
 
 It is easy to program custom pipeline modlues, the interface is simple:
 
-	#include "mod.h"
+	#include "logpipe-module.h"
 	#include <syslog.h>
 
-	static int run_syslog(void *ctx, str_t *str, logline_t *line) {
-		syslog(LOG_ERR, "%.*s", (int)str->len, str->ptr);
+	static int run_syslog(void *ctx, str_t *buf, logline_t *line) {
+		syslog(LOG_ERR, "%.*s", (int)buf->len, buf->ptr);
 		return 1;
 	}
 	const logmod_t mod_syslog = {
@@ -88,9 +90,9 @@ It is easy to program custom pipeline modlues, the interface is simple:
 		"name", &init, &test, &shutdown
 	};
 
-Then add the module to `logpipe.c` and `src/mod.h`.
+Then define the module in `logpipe-module.h` and rebuild logpipe.
 
-Each module has a name, an init function which takes a pointer to the place that it should create its context pointer, then the run and shutdown functions which are given the context pointer directly.
+Each module has a name, an init function which takes a pointer to its own context pointer, then the run and shutdown functions which are given the context pointer directly.
 
 If a function returns 0 then the pipeline will halt there and the buffer will be written
 to stdout prefixed by the step 
