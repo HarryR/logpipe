@@ -8,7 +8,7 @@ int jp_callback (void *ctx, const char *data, uint32_t len) {
 }
 
 static int
-logstash_print(void *ctx, str_t *str, logline_t *line) {
+logstash_print(void *ctx, str_t *str, logmeta_t *meta) {
     json_printer jp;
     str_clear(str);
     json_print_init(&jp, jp_callback, str); 
@@ -17,7 +17,7 @@ logstash_print(void *ctx, str_t *str, logline_t *line) {
 
         json_print_raw(&jp, JSON_OBJECT_BEGIN, NULL, 0);
 
-		logline_print_id(line, &jp, "_id");
+		logline_print_id(meta, &jp, "_id");
         print_keystr2(&jp, "_type", "logstash");
 
         /* Timestamp compatible with logstash
@@ -25,31 +25,31 @@ logstash_print(void *ctx, str_t *str, logline_t *line) {
 		 */
         char timestamp[50];
         memset(timestamp, 0, sizeof(timestamp));
-        strftime(timestamp, sizeof(timestamp), "logstash-%Y.%m.%d", &line->utc_timestamp);
+        strftime(timestamp, sizeof(timestamp), "logstash-%Y.%m.%d", &meta->utc_timestamp);
         json_print_key(&jp, "_index");
         json_print_raw(&jp, JSON_STRING, timestamp, strlen(timestamp));
 
         memset(timestamp, 0, sizeof(timestamp));
-        strftime(timestamp, sizeof(timestamp), "%Y-%m-%dT%H:%M:%SZ", &line->utc_timestamp);
+        strftime(timestamp, sizeof(timestamp), "%Y-%m-%dT%H:%M:%SZ", &meta->utc_timestamp);
         json_print_key(&jp, "@timestamp");
         json_print_raw(&jp, JSON_STRING, timestamp, strlen(timestamp));
 
-        print_optkeystr(&jp, "client_ip", &line->client_ip);
+        print_optkeystr(&jp, "client_ip", logmeta_field(meta, LOGPIPE_C_IP));
 
         /* "req": {...} */
         json_print_key(&jp, "req");
             json_print_raw(&jp, JSON_OBJECT_BEGIN, NULL, 0);
-            print_optkeystr(&jp, "verb", &line->req_verb);
-            print_optkeystr(&jp, "path", &line->req_path);
-            print_optkeystr(&jp, "ver", &line->req_ver);
-            print_optkeystr(&jp, "agent", &line->req_agent);            
+            print_optkeystr(&jp, "verb", logmeta_field(meta, LOGPIPE_CS_METHOD));
+            print_optkeystr(&jp, "path", logmeta_field(meta, LOGPIPE_CS_URI_STEM));
+            print_optkeystr(&jp, "agent", logmeta_field(meta, LOGPIPE_CS_USER_AGENT));
             json_print_raw(&jp, JSON_OBJECT_END, NULL, 0);
 
         /* "referrer": {...} */
-        if( line->req_referrer.len ) {
+        str_t *referrer = logmeta_field(meta, LOGPIPE_CS_REFERER);
+        if( str_len(referrer) ) {
             json_print_key(&jp, "referrer");
                 json_print_raw(&jp, JSON_OBJECT_BEGIN, NULL, 0);
-                php_url *url = php_url_parse_ex((char*)line->req_referrer.ptr, line->req_referrer.len);
+                php_url *url = php_url_parse_ex((char*)referrer->ptr, referrer->len);
                 if( url != NULL ) {
                     print_optkeystr2(&jp, "scheme", url->scheme);
                     print_optkeystr2(&jp, "user", url->user);
@@ -61,7 +61,7 @@ logstash_print(void *ctx, str_t *str, logline_t *line) {
                     php_url_free(url);
                 }
                 else {
-                    print_keystr(&jp, "_raw", &line->req_referrer);
+                    print_keystr(&jp, "_raw", referrer);
                 }
                 json_print_raw(&jp, JSON_OBJECT_END, NULL, 0);
         }
@@ -69,9 +69,10 @@ logstash_print(void *ctx, str_t *str, logline_t *line) {
         /* "resp": {...} */
         json_print_key(&jp, "resp");
             json_print_raw(&jp, JSON_OBJECT_BEGIN, NULL, 0);
-            print_keyraw(&jp, "status", &line->resp_status);
-            if( line->resp_size.len ) {
-                print_keyraw(&jp, "size", &line->resp_size);
+            print_keyraw(&jp, "status", logmeta_field(meta, LOGPIPE_SC_STATUS));
+            str_t *resp_size = logmeta_field(meta, LOGPIPE_BYTES);
+            if( str_len(resp_size) ) {
+                print_keyraw(&jp, "size", resp_size);
             }
             json_print_raw(&jp, JSON_OBJECT_END, NULL, 0);
 

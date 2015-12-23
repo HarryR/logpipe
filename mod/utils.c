@@ -6,7 +6,7 @@
 
 #define MAX_LINE_LENGTH 8192
 
-static int run_syslog(void *ctx, str_t *str, logline_t *line) {
+static int run_syslog(void *ctx, str_t *str, logmeta_t *meta) {
 	syslog(LOG_ERR, "%.*s", (int)str_len(str), str_ptr(str));
 	return 1;
 }
@@ -16,7 +16,7 @@ const logmod_t mod_syslog = {
 };
 
 
-static int reset_str(void *ctx, str_t *str, logline_t *line) {
+static int reset_str(void *ctx, str_t *str, logmeta_t *meta) {
 	if( str ) {
 		str_clear(str);
 	}
@@ -27,9 +27,9 @@ const logmod_t mod_reset_str = {
 };
 
 
-static int reset_line(void *ctx, str_t *str, logline_t *line) {
-	if( line ) {		
-		line_free(line);
+static int reset_line(void *ctx, str_t *str, logmeta_t *meta) {
+	if( meta ) {		
+		logmeta_clear(meta);
 	}
 	return 1;
 }
@@ -38,32 +38,31 @@ const logmod_t mod_reset_line = {
 };
 
 
-static int reset_both(void *ctx, str_t *str, logline_t *line) {
-	return reset_line(ctx, str, line) || reset_str(ctx, str, line);
+static int reset_both(void *ctx, str_t *str, logmeta_t *meta) {
+	return reset_line(ctx, str, meta) || reset_str(ctx, str, meta);
 }
 const logmod_t mod_reset_both = {
   "reset", NULL, reset_both, NULL
 };
 
-#define PRINT_FIELD(field) { printf(" " #field ": %d \"%.*s\"\n", (int)line->field.len, (int)line->field.len, line->field.ptr); }
-static int debug_line(void *ctx, str_t *str, logline_t *line) {
+#define PRINT_FIELD(field) { printf(" " #field ": %d \"%.*s\"\n", (int)logmeta_field(meta, field)->len, (int)logmeta_field(meta, field)->len, logmeta_field(meta, field)->ptr); }
+static int debug_line(void *ctx, str_t *str, logmeta_t *meta) {
 	printf("\n");
-	printf("line %p\n", line);
-	PRINT_FIELD(timestamp);
-	PRINT_FIELD(client_ip);
-	PRINT_FIELD(client_identity);
-	PRINT_FIELD(client_auth);
-	PRINT_FIELD(req_verb);
-	PRINT_FIELD(req_path);
-	PRINT_FIELD(req_ver);
-	PRINT_FIELD(resp_status);
-	PRINT_FIELD(resp_size);
-	PRINT_FIELD(req_referrer);
-	PRINT_FIELD(req_agent);
-	PRINT_FIELD(duration);
-	PRINT_FIELD(resp_cache);
-	PRINT_FIELD(hier_code);
-	PRINT_FIELD(mime_type);
+	PRINT_FIELD(LOGPIPE_TIMESTAMP);
+	PRINT_FIELD(LOGPIPE_C_IP);
+	PRINT_FIELD(LOGPIPE_CS_IDENT);
+	PRINT_FIELD(LOGPIPE_CS_USERNAME);
+	PRINT_FIELD(LOGPIPE_CS_METHOD);
+	PRINT_FIELD(LOGPIPE_CS_URI_STEM);
+	PRINT_FIELD(LOGPIPE_CS_HTTP_VERSION);
+	PRINT_FIELD(LOGPIPE_SC_STATUS);
+	PRINT_FIELD(LOGPIPE_BYTES);
+	PRINT_FIELD(LOGPIPE_CS_REFERER);
+	PRINT_FIELD(LOGPIPE_CS_USER_AGENT);
+	PRINT_FIELD(LOGPIPE_TIME_TAKEN);
+	PRINT_FIELD(LOGPIPE_SC_CACHE);
+	PRINT_FIELD(LOGPIPE_HIER_CODE);
+	PRINT_FIELD(LOGPIPE_SC_CONTENT_TYPE);
 	return 1;
 }
 #undef PRINT_FIELD
@@ -71,7 +70,7 @@ const logmod_t mod_debug_line = {
   "debug.line", NULL, debug_line, NULL
 };
 
-static int run_FILE_read(void *ctx, str_t *str, logline_t *line) {
+static int run_FILE_read(void *ctx, str_t *str, logmeta_t *meta) {
 	char buf[MAX_LINE_LENGTH];
 	str_clear(str);
 	if( ! fgets(buf, MAX_LINE_LENGTH, ctx) ) {
@@ -85,20 +84,20 @@ static int run_FILE_read(void *ctx, str_t *str, logline_t *line) {
 	return 1;
 }
 
-static int init_FILE_stdin(void *ctx, str_t *str, logline_t *line) {
+static int init_FILE_stdin(void *ctx, str_t *str, logmeta_t *meta) {
 	*((FILE**)ctx) = stdin;
 	return 1;
 }
-static int init_FILE_stdout(void *ctx, str_t *str, logline_t *line) {
+static int init_FILE_stdout(void *ctx, str_t *str, logmeta_t *meta) {
 	*((FILE**)ctx) = stdout;
 	return 1;
 }
-static int init_FILE_stderr(void *ctx, str_t *str, logline_t *line) {
+static int init_FILE_stderr(void *ctx, str_t *str, logmeta_t *meta) {
 	*((FILE**)ctx) = stderr;
 	return 1;
 }
 
-static int run_FILE_write(void *ctx, str_t *str, logline_t *line) {
+static int run_FILE_write(void *ctx, str_t *str, logmeta_t *meta) {
 	if( ! str_isempty(str) ) {
 		fwrite(str_ptr(str), str_len(str), 1, ctx);
 		if( str_char(str, str_len(str)) != '\n' ) {
@@ -108,7 +107,7 @@ static int run_FILE_write(void *ctx, str_t *str, logline_t *line) {
 	return 1;
 }
 
-static int stop_FILE(void *ctx, str_t *str, logline_t *line) {
+static int stop_FILE(void *ctx, str_t *str, logmeta_t *meta) {
 	if( ctx ) {
 		fclose(ctx);
 	}

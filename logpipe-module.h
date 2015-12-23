@@ -2,9 +2,9 @@
 #define LOGPIPE_MODULES_H_
 
 #include "src/str.h"
-#include "src/log.h"
+#include "src/logmeta.h"
 
-typedef int (*logmod_fn_t)(void *ctx, str_t *buf, logline_t *line);
+typedef int (*logmod_fn_t)(void *ctx, str_t *buf, logmeta_t *meta);
 
 typedef struct {
     const char *name;

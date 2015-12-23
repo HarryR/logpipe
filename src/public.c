@@ -10,20 +10,20 @@ struct logpipe {
 	int is_stopping;
 	logsteps_t steps;
 	str_t buf;
-	logline_t meta;
+	logmeta_t meta;
 };
 
 
 logpipe_t *logpipe_new(void) {
-	logpipe_t *val = malloc(sizeof(*val));
-	if( ! val ) {
-		return val;
+	logpipe_t *pipe = malloc(sizeof(*pipe));
+	if( ! pipe ) {
+		return pipe;
 	}
-	val->is_stopping = 0;
-	str_init(&val->buf);
-	line_init(&val->meta, NULL);
-	logsteps_init(&val->steps);
-	return val;
+	pipe->is_stopping = 0;
+	str_init(&pipe->buf);
+	logmeta_clear(&pipe->meta);
+	logsteps_init(&pipe->steps);
+	return pipe;
 }
 
 
@@ -31,7 +31,7 @@ void logpipe_destroy(logpipe_t *pipe) {
 	assert( pipe );
 	pipe->is_stopping = 1;
 	logsteps_free(&pipe->steps);
-	line_free(&pipe->meta);
+	logmeta_clear(&pipe->meta);
 	str_clear(&pipe->buf);
 	free(pipe);
 }

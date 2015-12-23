@@ -41,13 +41,15 @@ static char rotX(char c){
   }
 }
 
-static void anon_blank(str_t *str) {
+static void anon_blank(logmeta_t *meta, logpipe_field_t field) {
+  str_t *str = logmeta_field(meta, field);
   if( str && str->len && get_lfsr() % 4 ) {
     str_clear(str);
   }
 }
 
-static void anon_str(str_t *str) {
+static void anon_str(logmeta_t *meta, logpipe_field_t field) {
+  str_t *str = logmeta_field(meta, field);
 	if( ! str->ptr || str->len < 1 ) {
 		return;
 	}
@@ -60,16 +62,16 @@ static void anon_str(str_t *str) {
 
 
 static int
-debug_anon(void *ctx, str_t *str, logline_t *line) {
-	anon_str(&line->client_ip);
-	anon_str(&line->client_identity);
-	anon_str(&line->client_auth);
-	anon_str(&line->req_path);
-	anon_str(&line->req_referrer);
-	anon_str(&line->req_agent);
-	line->utc_timestamp.tm_sec = get_lfsr() % 60;
-	line->utc_timestamp.tm_mon = get_lfsr() % 12;
-	line->utc_timestamp.tm_year = 110;
+debug_anon(void *ctx, str_t *str, logmeta_t *meta) {
+	anon_str(meta, LOGPIPE_C_IP);
+	anon_str(meta, LOGPIPE_CS_IDENT);
+	anon_str(meta, LOGPIPE_CS_USERNAME);
+	anon_str(meta, LOGPIPE_CS_URI_STEM);
+	anon_str(meta, LOGPIPE_CS_REFERER);
+	anon_str(meta, LOGPIPE_CS_USER_AGENT);
+	meta->utc_timestamp.tm_sec = get_lfsr() % 60;
+	meta->utc_timestamp.tm_mon = get_lfsr() % 12;
+	meta->utc_timestamp.tm_year = 110;
 	return 1;
 }
 
@@ -79,23 +81,14 @@ const logmod_t mod_debug_anon = {
 
 
 static int
-debug_randblank(void *ctx, str_t *str, logline_t *line) {
-  anon_blank(&line->timestamp);
-  anon_blank(&line->client_ip);
-  anon_blank(&line->client_identity);
-  anon_blank(&line->client_auth);
-  anon_blank(&line->req_verb);
-  anon_blank(&line->req_path);
-  anon_blank(&line->req_ver);
-  anon_blank(&line->req_referrer);
-  anon_blank(&line->req_agent);
-  anon_blank(&line->duration);
-  anon_blank(&line->resp_cache);
-  anon_blank(&line->hier_code);
-  anon_blank(&line->mime_type);
+debug_randblank(void *ctx, str_t *str, logmeta_t *meta) {
+  int i;
+  for( i = 0; i  < LOGPIPE_FIELDS_END; i++ ) {
+    anon_blank(meta, i);
+  }
   return 1;
 }
 
 const logmod_t mod_debug_randblank = {
-  "debug.randblank", NULL, (logmod_fn_t)debug_randblank, NULL
+  "debug.randblank", NULL, debug_randblank, NULL
 };

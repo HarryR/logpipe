@@ -1,8 +1,10 @@
 /* file minunit_example.c */
  
- #include <stdio.h>
- #include "str.h"
- #include "minunit.h"
+#include <stdio.h>
+#include <string.h>
+
+#include "str.h"
+#include "minunit.h"
 
 MU_TEST(test_ptime_epoc_secs) {
 	struct tm output;

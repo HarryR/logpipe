@@ -4,13 +4,14 @@
 #include "logpipe-module.h"
 
 
-static void save_str(str_t *field, const char *data, int len) {
+static void save_str(logmeta_t *meta, logpipe_field_t field, const char *data, int len) {
+  str_t *field_str = logmeta_field(meta, field);  
   if( len == 0 || (len == 1 && data[0] == '-') ) {
     return;
   }
-  str_append(field, data, len);
+  str_append(field_str, data, len);
 }
-#define SAVE_LINE_STR(field) { save_str(&line->field, (const char*)ts, p - ts); }
+#define SAVE_LINE_STR(field) { save_str(meta, field, (const char*)ts, p - ts); }
 
 %%{
   machine parser_apacheclf;
@@ -28,39 +29,39 @@ static void save_str(str_t *field, const char *data, int len) {
   # > and % denote entering and leaving actions respectively, so this machine
   #   will mark and emit each of the following token types as it sees them
   client_ip = [0-9\.:]+
-            >mark %{ SAVE_LINE_STR(client_ip) };
+            >mark %{ SAVE_LINE_STR(LOGPIPE_C_IP) };
 
   timestamp = [^\]]+
             >mark %{
-              SAVE_LINE_STR(timestamp)              
-              str_ptime_rfc1123(&line->timestamp, &line->utc_timestamp);
+              SAVE_LINE_STR(LOGPIPE_TIMESTAMP)              
+              str_ptime_rfc1123(logmeta_field(meta, LOGPIPE_TIMESTAMP), &meta->utc_timestamp);
             };
 
   client_identity = '-' | [^ ]+
-            >mark %{ SAVE_LINE_STR(client_identity) };
+            >mark %{ SAVE_LINE_STR(LOGPIPE_CS_IDENT) };
 
   client_auth =  '-' | [^ ]+
-            >mark %{ SAVE_LINE_STR(client_auth) };
+            >mark %{ SAVE_LINE_STR(LOGPIPE_CS_USERNAME) };
 
   req_verb = [A-Z]+
-            >mark %{ SAVE_LINE_STR(req_verb) };
+            >mark %{ SAVE_LINE_STR(LOGPIPE_CS_METHOD) };
 
   req_path = [^ ]+
-            >mark %{ SAVE_LINE_STR(req_path) };
+            >mark %{ SAVE_LINE_STR(LOGPIPE_CS_URI_STEM) };
 
   req_ver  = [0-9\.]+
-            >mark %{ SAVE_LINE_STR(req_ver) };
+            >mark %{ SAVE_LINE_STR(LOGPIPE_CS_HTTP_VERSION) };
 
   resp_status  = digit+
-            >mark %{ SAVE_LINE_STR(resp_status) };
+            >mark %{ SAVE_LINE_STR(LOGPIPE_SC_STATUS) };
 
-  resp_size = (digit+ >mark %{ SAVE_LINE_STR(resp_size) } | '-' );
+  resp_size = (digit+ >mark %{ SAVE_LINE_STR(LOGPIPE_BYTES) } | '-' );
 
   req_referrer = escaped_char*
-            >mark %{ SAVE_LINE_STR(req_referrer) };
+            >mark %{ SAVE_LINE_STR(LOGPIPE_CS_REFERER) };
 
   req_agent = escaped_char*
-            >mark %{ SAVE_LINE_STR(req_agent) };
+            >mark %{ SAVE_LINE_STR(LOGPIPE_CS_USER_AGENT) };
 
   # Assemble the components to define a single line
   line = (
@@ -79,26 +80,23 @@ static void save_str(str_t *field, const char *data, int len) {
   );
 
   main := line $err{
-    if( line->client_ip.len
-        && line->timestamp.len
-        && line->req_verb.len
-        && line->req_path.len
-        && line->req_ver.len
-        && line->resp_status.len) {
-        return 1;
-    }
-    return 0;
+    return ! logmeta_field_isempty(meta, LOGPIPE_C_IP)
+        && ! logmeta_field_isempty(meta, LOGPIPE_TIMESTAMP)
+        && ! logmeta_field_isempty(meta, LOGPIPE_CS_METHOD)
+        && ! logmeta_field_isempty(meta, LOGPIPE_CS_URI_STEM)
+        && ! logmeta_field_isempty(meta, LOGPIPE_CS_HTTP_VERSION)
+        && ! logmeta_field_isempty(meta, LOGPIPE_SC_STATUS);
   };
 
   write data;
 
 }%%
 
-static int parse_apacheclf(void *ctx, str_t *str, logline_t *line) {
+static int parse_apacheclf(void *ctx, str_t *str, logmeta_t *meta) {
     int cs;
     unsigned char *p, *pe, *ts, *eof;
-    line_free(line);
-    line_init(line, str);
+    logmeta_clear(meta);
+    logmeta_hash(meta, str);
 
     p = str->ptr;
     eof = pe = str->ptr + str->len;
@@ -115,39 +113,30 @@ const logmod_t mod_parse_apacheclf = {
 };
 
 
-static int print_apacheclf(void *ctx, str_t *str, logline_t *line) {
+static void print_field_or_dash(str_t *buf, logmeta_t *meta, logpipe_field_t field, const char *after) {
+  str_t *field_str = logmeta_field(meta, field);
+  if( str_isempty(field_str) ) {
+    str_append(buf, "-", 1);
+  }
+  else {
+    str_append_str(buf, field_str);
+  }
+  if( after ) {
+    str_append(buf, after, 1);
+  }
+}
+
+
+static int print_apacheclf(void *ctx, str_t *str, logmeta_t *meta) {
   char timestamp[50];
   memset(timestamp, 0, sizeof(timestamp));
-  strftime(timestamp, sizeof(timestamp), "%d/%b/%Y:%H:%M:%S %z", &line->utc_timestamp);
+  strftime(timestamp, sizeof(timestamp), "%d/%b/%Y:%H:%M:%S %z", &meta->utc_timestamp);
 
   str_clear(str);
 
-  // ip
-  if( str_isempty(&line->client_ip) ) {
-    str_append(str, "-", 1);
-  }
-  else {
-    str_append_str(str, &line->client_ip);
-  }
-  str_append(str, " ", 1);
-
-  // ident
-  if( str_isempty(&line->client_identity) ) {
-    str_append(str, "-", 1);
-  }
-  else {
-    str_append_str(str, &line->client_identity);
-  }
-  str_append(str, " ", 1);
-
-  // auth
-  if( str_isempty(&line->client_auth) ) {
-    str_append(str, "-", 1);
-  }
-  else {
-    str_append_str(str, &line->client_auth);
-  }
-  str_append(str, " ", 1);
+  print_field_or_dash(str, meta, LOGPIPE_C_IP, " ");
+  print_field_or_dash(str, meta, LOGPIPE_CS_IDENT, " ");
+  print_field_or_dash(str, meta, LOGPIPE_CS_USERNAME, " ");
 
   // timestamp
   str_append(str, "[", 1);
@@ -156,56 +145,22 @@ static int print_apacheclf(void *ctx, str_t *str, logline_t *line) {
 
   // "GET ... HTTP/1."
   str_append(str, "\"", 1);
-  if( str_isempty(&line->req_verb) ) {
-    str_append(str, "ERR", 1);
-  }
-  else {
-    str_append_str(str, &line->req_verb);
-  }
-  str_append(str, " ", 1);
-
-  // Path
-  if( str_isempty(&line->req_path) ) {
-    str_append(str, "-", 1);
-  }
-  else {
-    str_append_str(str, &line->req_path);
-  }
-  str_append(str, " ", 1);
-
-  // HTTP ver
+  print_field_or_dash(str, meta, LOGPIPE_CS_METHOD, " ");
+  print_field_or_dash(str, meta, LOGPIPE_CS_URI_STEM, " ");
   str_append(str, "HTTP/", 5);
-  if( str_isempty(&line->req_ver) ) {
-    str_append(str, "?.?", 3);
-  }
-  else {
-    str_append_str(str, &line->req_ver);
-  }
+  print_field_or_dash(str, meta, LOGPIPE_CS_HTTP_VERSION, NULL);
   str_append(str, "\" ", 2);
 
-  if( str_isempty(&line->resp_status) ) {
-    str_append(str, "-", 1);
-  }
-  else {
-    str_append_str(str, &line->resp_status);
-  }
-  str_append(str, " ", 1);
+  print_field_or_dash(str, meta, LOGPIPE_SC_STATUS, " ");
+  print_field_or_dash(str, meta, LOGPIPE_BYTES, NULL);
 
-  if( str_isempty(&line->resp_size) ) {
-    str_append(str, "-", 1);
-  }
-  else {
-    str_append_str(str, &line->resp_size);
-  }
-  str_append(str, " ", 1);
-
-  if( ! str_isempty(&line->req_referrer) ) {
+  if( ! logmeta_field_isempty(meta, LOGPIPE_CS_REFERER) ) {
+    str_append(str, " \"", 1);
+    str_append_str(str, logmeta_field(meta, LOGPIPE_CS_REFERER));
     str_append(str, "\"", 1);
-    str_append_str(str, &line->req_referrer);
-    str_append(str, "\"", 1);
-    if( ! str_isempty(&line->req_agent) ) {
+    if( ! logmeta_field_isempty(meta, LOGPIPE_CS_USER_AGENT) ) {
       str_append(str, " \"", 2);
-      str_append_str(str, &line->req_agent);
+      str_append_str(str, logmeta_field(meta, LOGPIPE_CS_USER_AGENT));
       str_append(str, "\"", 1);
     }
   }

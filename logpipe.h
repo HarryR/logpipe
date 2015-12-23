@@ -19,11 +19,11 @@ typedef enum {
 	LOGPIPE_CS_REFERER,  // req_referrer, cs(Referer)
 	LOGPIPE_CS_USER_AGENT, // req_agent, cs(User-Agent)
 	LOGPIPE_TIME_TAKEN,  // duration, time-taken
-	LOGPIPE_HIER_CODE,   // hier_code
+	LOGPIPE_HIER_CODE,  // hier_code
 	LOGPIPE_SC_CONTENT_TYPE, // mime_type, sc(Content-Type)
-	LOGPIPE_CS_COOKIE, // cs(Cookie)
-	LOGPIPE_URI_QUERY, // cs-uri-query
-	LOGPIPE_CS_HOST, // x-host-header, cs(Host)
+	LOGPIPE_CS_COOKIE,	// cs(Cookie)
+	LOGPIPE_URI_QUERY,	// cs-uri-query
+	LOGPIPE_CS_HOST,	// x-host-header, cs(Host)
 	// x-edge-location
 	// date
 	// x-edge-request-id

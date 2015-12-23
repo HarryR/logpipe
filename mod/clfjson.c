@@ -9,29 +9,28 @@ int jp_callback (void *ctx, const char *data, uint32_t len) {
 }
 
 static int
-print_clfjson(void *ctx, str_t *str, logline_t *line) {
+print_clfjson(void *ctx, str_t *str, logmeta_t *meta) {
     json_printer jp;
     str_clear(str);
     json_print_init(&jp, jp_callback, str); 
 
     char timestamp[50];
     memset(timestamp, 0, sizeof(timestamp));
-    strftime(timestamp, sizeof(timestamp), "%d/%b/%Y:%H:%M:%S %z", &line->utc_timestamp);
+    strftime(timestamp, sizeof(timestamp), "%d/%b/%Y:%H:%M:%S %z", &meta->utc_timestamp);
 
     json_print_raw(&jp, JSON_ARRAY_BEGIN, NULL, 0);    
-        print_strraw_or_null(&jp, &line->client_ip);
-        print_strraw_or_null(&jp, &line->client_identity);
-        print_strraw_or_null(&jp, &line->client_auth);
+        print_strraw_or_null(&jp, logmeta_field(meta, LOGPIPE_C_IP));
+        print_strraw_or_null(&jp, logmeta_field(meta, LOGPIPE_CS_IDENT));
+        print_strraw_or_null(&jp, logmeta_field(meta, LOGPIPE_CS_USERNAME));
         json_print_raw(&jp, JSON_STRING, timestamp, strlen(timestamp));
-        print_strraw_or_null(&jp, &line->req_verb);
-        print_strraw_or_null(&jp, &line->req_path);
-        print_strraw_or_null(&jp, &line->req_ver);
-        print_strraw_or_null(&jp, &line->resp_status);
-        print_strraw_or_null(&jp, &line->resp_size);
-        if( line->req_referrer.len ) {
-            print_strraw_or_null(&jp, &line->req_referrer);
-            if( line->req_agent.len ) {
-                print_strraw_or_null(&jp, &line->req_agent);
+        print_strraw_or_null(&jp, logmeta_field(meta, LOGPIPE_CS_METHOD));
+        print_strraw_or_null(&jp, logmeta_field(meta, LOGPIPE_CS_URI_STEM));
+        print_strraw_or_null(&jp, logmeta_field(meta, LOGPIPE_SC_STATUS));
+        print_strraw_or_null(&jp, logmeta_field(meta, LOGPIPE_BYTES));
+        if( ! logmeta_field_isempty(meta, LOGPIPE_CS_REFERER) ) {
+            print_strraw_or_null(&jp, logmeta_field(meta, LOGPIPE_CS_REFERER));
+            if( ! logmeta_field_isempty(meta, LOGPIPE_CS_USER_AGENT) ) {
+                print_strraw_or_null(&jp, logmeta_field(meta, LOGPIPE_CS_USER_AGENT));
             }
         }
     json_print_raw(&jp, JSON_ARRAY_END, NULL, 0);    
@@ -48,10 +47,8 @@ typedef struct {
 	int finished;
 	int errored;
 	str_t *str;
-	logline_t *line;
+	logmeta_t *meta;
 } clfjson_state_t;
-
-#define SAVE_LINE_STR(field) { line->field.ptr = data; line->field.length; }
 
 typedef struct {
 	str_t *str;
@@ -62,23 +59,22 @@ typedef struct {
 static int
 clfjson_state(void *_state, int type, const char *data, uint32_t length) {
 	clfjson_state_t *state = _state;
-	logline_t *line = state->line;
+	logmeta_t *meta = state->meta;
 	if( state->finished || state->errored ) {
 		return 1;
 	}
 	clfjson_step_t steps[] = {
 		{NULL, JSON_ARRAY_BEGIN, 0},
-		{&line->client_ip, JSON_STRING, 0},
-		{&line->client_identity, JSON_STRING, 0},
-		{&line->client_auth, JSON_STRING, 0},
-		{&line->timestamp, JSON_STRING, 0},
-		{&line->req_verb, JSON_STRING, 0},
-		{&line->req_path, JSON_STRING, 0},
-		{&line->req_ver, JSON_STRING, 0},
-		{&line->resp_status, JSON_STRING, 0},
-		{&line->resp_size, JSON_STRING, 0},
-		{&line->req_referrer, JSON_STRING, 1},
-		{&line->req_agent, JSON_STRING, 1},
+		{logmeta_field(meta, LOGPIPE_C_IP), JSON_STRING, 0},
+		{logmeta_field(meta, LOGPIPE_CS_IDENT), JSON_STRING, 0},
+		{logmeta_field(meta, LOGPIPE_CS_USERNAME), JSON_STRING, 0},
+		{logmeta_field(meta, LOGPIPE_TIMESTAMP), JSON_STRING, 0},
+		{logmeta_field(meta, LOGPIPE_CS_METHOD), JSON_STRING, 0},
+		{logmeta_field(meta, LOGPIPE_CS_URI_STEM), JSON_STRING, 0},
+		{logmeta_field(meta, LOGPIPE_SC_STATUS), JSON_STRING, 0},
+		{logmeta_field(meta, LOGPIPE_BYTES), JSON_STRING, 0},
+		{logmeta_field(meta, LOGPIPE_CS_REFERER), JSON_STRING, 1},
+		{logmeta_field(meta, LOGPIPE_CS_USER_AGENT), JSON_STRING, 1},
 		{NULL, JSON_ARRAY_END, 0},
 	};	
 	clfjson_step_t *step = &steps[state->i];
@@ -117,22 +113,21 @@ clfjson_state(void *_state, int type, const char *data, uint32_t length) {
 }
 
 static int
-parse_clfjson(void *ctx, str_t *str, logline_t *line) {
-	clfjson_state_t state = {0, 0, 0, str, line};
+parse_clfjson(void *ctx, str_t *str, logmeta_t *meta) {
+	clfjson_state_t state = {0, 0, 0, str, meta};
 	json_parser parser;
 	uint32_t processed = 0;
-	line_free(line);
-	line_init(line, str);
+	logmeta_clear(meta);
+	logmeta_hash(meta, str);
 	json_parser_init(&parser, NULL, clfjson_state, &state);
 	json_parser_string(&parser, (const char *)str->ptr, str->len, &processed);
-	str_ptime_rfc1123(&line->timestamp, &line->utc_timestamp);
+	str_ptime_rfc1123(logmeta_field(meta, LOGPIPE_TIMESTAMP), &meta->utc_timestamp);
 	json_parser_free(&parser);
-	return line->client_ip.len
-        && line->timestamp.len
-        && line->req_verb.len
-        && line->req_path.len
-        && line->req_ver.len
-        && line->resp_status.len;
+	return ! logmeta_field_isempty(meta, LOGPIPE_C_IP)
+		&& ! logmeta_field_isempty(meta, LOGPIPE_TIMESTAMP)
+		&& ! logmeta_field_isempty(meta, LOGPIPE_CS_METHOD)
+		&& ! logmeta_field_isempty(meta, LOGPIPE_CS_URI_STEM)
+		&& ! logmeta_field_isempty(meta, LOGPIPE_SC_STATUS);
 }
 
 const logmod_t mod_parse_clfjson = {

@@ -53,9 +53,9 @@ void print_strraw_or_null(json_printer *jp, str_t *str) {
 	}
 }
 
-void logline_print_id(logline_t *line, json_printer *jp, const char* key) {
+void logline_print_id(logmeta_t *meta, json_printer *jp, const char* key) {
     char b64[BASE64_SIZE(16)];
-    base64_encode(b64, sizeof(b64), line->md5, 16);
+    base64_encode(b64, sizeof(b64), meta->md5, 16);
     b64[22] = 0;
     if( key ) {
         json_print_key(jp, key);
