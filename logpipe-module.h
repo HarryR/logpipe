@@ -38,7 +38,6 @@ extern const logmod_t mod_debug_randblank;
 
 //extern const logmod_t mod_;
 
-#ifdef USE_LOGPIPE_MODULES
 static const logmod_t *builtin_mods[] = {
   &mod_reset_str,
   &mod_reset_line,
@@ -61,6 +60,5 @@ static const logmod_t *builtin_mods[] = {
   // &mod_...,
   0
 };
-#endif
 
 #endif
