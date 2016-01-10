@@ -56,7 +56,7 @@ void logsteps_free(logsteps_t *steps) {
 }
 
 
-int logsteps_step(logsteps_t *steps, void *arg_A, void *arg_B) {
+int logsteps_step(logsteps_t *steps, void *arg_A, void *arg_B, int *error) {
 	assert( steps != NULL );
 	size_t idx = steps->idx;
 	if( idx >= steps->count ) {
@@ -65,8 +65,9 @@ int logsteps_step(logsteps_t *steps, void *arg_A, void *arg_B) {
 	logstep_t *step = &steps->steps[idx];
 	const logmod_t *mod = step->mod;
 	if( mod && mod->run_fn ) {
-		if( ! mod->run_fn(step->ctx, arg_A, arg_B) ) {
-			// Error!
+		int tmp_ret = mod->run_fn(step->ctx, arg_A, arg_B);
+		if( error ) {
+			*error = tmp_ret;
 		}
 	}
 	steps->idx += 1;

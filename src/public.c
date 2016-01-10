@@ -35,9 +35,9 @@ void logpipe_destroy(logpipe_t *pipe) {
 }
 
 
-int logpipe_step(logpipe_t *pipe) {
+int logpipe_step(logpipe_t *pipe, int *error) {
 	assert( pipe );
-	return logsteps_step(&pipe->steps, &pipe->buf, &pipe->meta);
+	return logsteps_step(&pipe->steps, &pipe->buf, &pipe->meta, error);
 }
 
 
@@ -50,13 +50,12 @@ int logpipe_run(logpipe_t *pipe, int *error) {
 	int idx = 0;
 	int step;
 	assert( pipe );
+	*error = 0;
 	logsteps_restart(&pipe->steps);
 	if( logpipe_steps_count(pipe) ) {		
-		while( (step = logpipe_step(pipe)) > 0 ) {
-			if( step < 0 ) {
-				if( error ) {
-					*error = step;
-				}
+		while( (step = logpipe_step(pipe, error)) > 0 ) {
+			if( step < 0 || *error <= 0 ) {
+				break;
 			}
 			idx += 1;
 			/* step will be zero when it reaches the last step */
@@ -72,8 +71,14 @@ int logpipe_run(logpipe_t *pipe, int *error) {
 
 int logpipe_run_forever(logpipe_t *pipe) {
 	assert( pipe );		
-	while( logpipe_steps_count(pipe) && ! pipe->is_stopping ) {
-		logpipe_run(pipe, NULL);
+	if( logpipe_steps_count(pipe) ) {
+		while( ! pipe->is_stopping ) {
+			int error = 0;
+			int step = logpipe_run(pipe, &error);
+			if( step != logpipe_steps_count(pipe) || error ) {
+				break;
+			}
+		}
 	}
 	return pipe->is_stopping;
 }

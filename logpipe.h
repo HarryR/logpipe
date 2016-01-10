@@ -59,7 +59,7 @@ int logpipe_run(logpipe_t *pipe, int *error);
  * Execute a pipeline step
  * @return Number of steps remaining
  */
-int logpipe_step(logpipe_t *pipe);
+int logpipe_step(logpipe_t *pipe, int *error);
 
 /**
  * Execute the pipeline again & again forever
