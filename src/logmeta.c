@@ -15,13 +15,17 @@ void logmeta_clear(logmeta_t *meta) {
 	memset(meta, 0, sizeof(*meta));
 }
 
-void logmeta_hash(logmeta_t *meta, str_t *str) {	
-	memset(meta->md5, 0, sizeof(meta->md5));
-	if( str && str->ptr ) {
+void logmeta_hash(logmeta_t *meta, const str_t *str) {	
+	assert( meta );
+	assert( str );
+	if( str && str->len && str->ptr ) {
     	md5_state_t ctx;
     	md5_init(&ctx);
     	md5_append(&ctx, str->ptr, str->len);
     	md5_finish(&ctx, meta->md5);
+	}
+	else {
+		memset(meta->md5, 0, sizeof(meta->md5));
 	}
 }
 
@@ -36,7 +40,7 @@ void logmeta_field_clear(logmeta_t *meta, logpipe_field_t field) {
 	str_clear(field_str);
 }
 
-void logmeta_field_set(logmeta_t *meta, logpipe_field_t field, str_t *str) {
+void logmeta_field_set(logmeta_t *meta, logpipe_field_t field, const str_t *str) {
 	str_t *field_str = logmeta_field(meta, field);
 	str_clear(field_str);
 	str_append_str(field_str, str);
@@ -48,5 +52,6 @@ int logmeta_field_isempty(logmeta_t *meta, logpipe_field_t field) {
 }
 
 struct tm *logmeta_timestamp(logmeta_t *meta) {
+	assert( meta );
 	return &meta->utc_timestamp;
 }

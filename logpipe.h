@@ -38,6 +38,8 @@ typedef enum {
 
 /**
  * Create a new empty pipeline
+ * @return pointer to logpipe context
+ * @see logpipe_destroy
  */
 logpipe_t *logpipe_new(void);
 
@@ -48,9 +50,10 @@ void logpipe_destroy(logpipe_t *pipe);
 
 /**
  * Execute the pipeline until error
- * @return 
+ * Upon a successful run, the return value == logpipe_steps_count(..)
+ * @return returns index of last step which was run
  */
-int logpipe_run(logpipe_t *pipe);
+int logpipe_run(logpipe_t *pipe, int *error);
 
 /**
  * Execute a pipeline step
@@ -92,6 +95,11 @@ int logpipe_steps_del(logpipe_t *pipe, int step);
  * @return Number of steps in the pipeline
  */
 int logpipe_steps_count(const logpipe_t *pipe);
+
+/**
+ * @return Offset of the current step, or -1 if no steps
+ */
+int logpipe_steps_index(const logpipe_t *pipe);
 
 /**
  * Retrieve the current buffer and it's length

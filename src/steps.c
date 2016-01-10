@@ -1,14 +1,18 @@
-#include "steps.h"
+#define USE_LOGPIPE_MODULES
 #include "logpipe-module.h"
+#include "steps.h"
 
 #include <string.h>
 #include <stdlib.h>
 #include <ctype.h>
+#include <assert.h>
 
 
 static const logmod_t *logsteps_findmod(const char *name) {
   const logmod_t *mod = NULL;
   const char *name_end = name;
+  assert( name != NULL );
+
   while( isalnum(*name_end) && *name_end != '.' ) {
     name_end++;    
   }
@@ -33,12 +37,14 @@ static const logmod_t *logsteps_findmod(const char *name) {
 
 
 void logsteps_init(logsteps_t *steps) {
+	assert( steps != NULL );
 	memset(steps, 0, sizeof(*steps));
 }
 
 
 void logsteps_free(logsteps_t *steps) {
 	size_t idx;
+	assert( steps != NULL );
 	for( idx = 0; idx < steps->count; idx++ ) {
 		logstep_t *step = &steps->steps[idx];
 		if( step->mod->free_fn ) {
@@ -51,6 +57,7 @@ void logsteps_free(logsteps_t *steps) {
 
 
 int logsteps_step(logsteps_t *steps, void *arg_A, void *arg_B) {
+	assert( steps != NULL );
 	size_t idx = steps->idx;
 	if( idx >= steps->count ) {
 		return -1;
@@ -67,8 +74,9 @@ int logsteps_step(logsteps_t *steps, void *arg_A, void *arg_B) {
 }
 
 
-int logsteps_add(logsteps_t *steps, const char *format, const logmod_t **mods) {
+int logsteps_add(logsteps_t *steps, const char *format) {
 	const logmod_t *mod = logsteps_findmod(format);
+	assert( steps != NULL );
 	if( ! mod ) {
 		return 0;
 	}
@@ -87,10 +95,18 @@ int logsteps_add(logsteps_t *steps, const char *format, const logmod_t **mods) {
 
 
 int logsteps_count(const logsteps_t *steps) {
+	assert( steps != NULL );
 	return steps->count;
 }
 
 
+int logsteps_idx(const logsteps_t *steps) {
+	assert( steps != NULL );
+	return steps->idx;
+}
+
+
 void logsteps_restart(logsteps_t *steps) {
+	assert( steps != NULL );
 	steps->idx = 0;
 }

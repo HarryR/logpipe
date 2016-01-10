@@ -6,17 +6,6 @@
 
 #include <assert.h>
 
-/*
-static void logline_print_extra(logopt_t *opt, json_printer *jp) {
-		size_t i;
-        // Add extra fields to every record (specified via -a on cmdline)
-        for( i = 0; i < opt->extra_cnt; i++ ) {
-            pair_t *pair = &opt->extra[i];
-            print_keystr(jp, (char*)pair->key.ptr, &pair->val);
-        }
-}
-*/
-
 static 
 int jp_callback (void *ctx, const char *data, uint32_t len) {
     return str_append(ctx, data, len) >= 0;

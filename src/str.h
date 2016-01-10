@@ -10,13 +10,6 @@ typedef struct {
     size_t len;
 } str_t;
 
-struct pair_t;
-typedef struct {
-    str_t key;
-    str_t val;
-    struct pair_t *next;
-} pair_t;
-
 int str_isempty(const str_t *str);
 str_t str_clone(const str_t *input);
 int str_append(str_t *str, const char *s, uint32_t length);
@@ -33,6 +26,14 @@ char *str_rpos(str_t *str, const char c);
 char *str_ptr(str_t *str);
 str_t str_init_cstr(const char *cstr);
 int str_append_cstr(str_t *str, const char *cstr);
+
+
+struct pair_t;
+typedef struct {
+    str_t key;
+    str_t val;
+    struct pair_t *next;
+} pair_t;
 
 int pair_count(const pair_t *pair);
 pair_t *pair_clear(pair_t *pair);

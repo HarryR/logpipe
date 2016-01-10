@@ -12,9 +12,9 @@ typedef struct {
 
 void logmeta_init(logmeta_t *meta);
 void logmeta_clear(logmeta_t *meta);
-void logmeta_hash(logmeta_t *meta, str_t *buf);
+void logmeta_hash(logmeta_t *meta, const str_t *buf);
 void logmeta_field_clear(logmeta_t *meta, logpipe_field_t field);
-void logmeta_field_set(logmeta_t *meta, logpipe_field_t field, str_t *str);
+void logmeta_field_set(logmeta_t *meta, logpipe_field_t field, const str_t *str);
 struct tm *logmeta_timestamp(logmeta_t *meta);
 str_t *logmeta_field(logmeta_t *meta, logpipe_field_t field);
 int logmeta_field_isempty(logmeta_t *meta, logpipe_field_t field);

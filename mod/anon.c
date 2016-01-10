@@ -1,6 +1,7 @@
 #include "logpipe-module.h"
 
 #include <stdint.h>
+#include <assert.h>
 
 /*
  * The deterministic source of randomness allows for
@@ -63,6 +64,9 @@ static void anon_str(logmeta_t *meta, logpipe_field_t field) {
 
 static int
 debug_anon(void *ctx, str_t *str, logmeta_t *meta) {
+  assert( str );
+  assert( meta );
+  
 	anon_str(meta, LOGPIPE_C_IP);
 	anon_str(meta, LOGPIPE_CS_IDENT);
 	anon_str(meta, LOGPIPE_CS_USERNAME);
@@ -83,6 +87,8 @@ const logmod_t mod_debug_anon = {
 static int
 debug_randblank(void *ctx, str_t *str, logmeta_t *meta) {
   int i;
+  assert( str );
+  assert( meta );
   for( i = 0; i  < LOGPIPE_FIELDS_END; i++ ) {
     anon_blank(meta, i);
   }

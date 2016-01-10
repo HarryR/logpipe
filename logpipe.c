@@ -1,4 +1,6 @@
 #include "logpipe.h"
+
+#define USE_LOGPIPE_MODULES
 #include "logpipe-module.h"
 
 #include <stdio.h>

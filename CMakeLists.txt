@@ -2,6 +2,8 @@ cmake_minimum_required (VERSION 2.8 FATAL_ERROR)
 
 PROJECT (logpipe C)
 
+enable_testing()
+
 # get rid of the extra default configurations
 set(CMAKE_CONFIGURATION_TYPES "Debug;Release" CACHE STRING "Limited configurations" FORCE)
 
@@ -24,6 +26,22 @@ add_test(test_str bin/test_str)
 target_link_libraries(test_str logpipe_core)
 if (CMAKE_SYSTEM_NAME MATCHES "Linux")
     target_link_libraries(test_str -lrt)
+endif ()
+
+add_executable(test_steps test/test_steps.c)
+add_dependencies(test_steps test_steps)
+add_test(test_steps bin/test_steps)
+target_link_libraries(test_steps logpipe_core logpipe_mod logpipe_ext)
+if (CMAKE_SYSTEM_NAME MATCHES "Linux")
+    target_link_libraries(test_steps -lrt)
+endif ()
+
+add_executable(test_logpipe test/test_logpipe.c)
+add_dependencies(test_logpipe test_logpipe)
+add_test(test_logpipe bin/test_logpipe)
+target_link_libraries(test_logpipe logpipe_core logpipe_mod logpipe_ext)
+if (CMAKE_SYSTEM_NAME MATCHES "Linux")
+    target_link_libraries(test_logpipe -lrt)
 endif ()
 
 add_custom_target(bin-dir ALL

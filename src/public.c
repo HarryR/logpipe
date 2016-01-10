@@ -1,8 +1,6 @@
 #include "logpipe.h"
 #include "steps.h"
 
-#include "logpipe-module.h"
-
 #include <stdlib.h>
 #include <assert.h>
 
@@ -48,21 +46,34 @@ void logpipe_restart(logpipe_t *pipe) {
 }
 
 
-int logpipe_run(logpipe_t *pipe) {
+int logpipe_run(logpipe_t *pipe, int *error) {
+	int idx = 0;
 	int step;
 	assert( pipe );
 	logsteps_restart(&pipe->steps);
-	while( (step = logpipe_step(pipe)) > 0 ) {
-		/* do nothing... will reduce to zero */
+	if( logpipe_steps_count(pipe) ) {		
+		while( (step = logpipe_step(pipe)) > 0 ) {
+			if( step < 0 ) {
+				if( error ) {
+					*error = step;
+				}
+			}
+			idx += 1;
+			/* step will be zero when it reaches the last step */
+		}
+		idx += 1;
 	}
-	return step;
+	if( error ) {
+		*error = 0;
+	}
+	return idx;
 }
 
 
 int logpipe_run_forever(logpipe_t *pipe) {
-	assert( pipe );
-	while( ! pipe->is_stopping ) {
-		logpipe_run(pipe);
+	assert( pipe );		
+	while( logpipe_steps_count(pipe) && ! pipe->is_stopping ) {
+		logpipe_run(pipe, NULL);
 	}
 	return pipe->is_stopping;
 }
@@ -70,7 +81,7 @@ int logpipe_run_forever(logpipe_t *pipe) {
 
 int logpipe_steps_add(logpipe_t *pipe, const char *format) {
 	assert( pipe );
-	return logsteps_add(&pipe->steps, format, builtin_mods);
+	return logsteps_add(&pipe->steps, format);
 }
 
 
@@ -86,6 +97,15 @@ const char *logpipe_buf_get(logpipe_t *pipe, int *len) {
 		*len = str_len(&pipe->buf);
 	}
 	return str_ptr(&pipe->buf);
+}
+
+
+int logpipe_steps_index(const logpipe_t *pipe) {
+	assert( pipe );
+	if( logsteps_count(&pipe->steps) == 0 ) {
+		return -1;
+	}
+	return logsteps_idx(&pipe->steps);
 }
 
 

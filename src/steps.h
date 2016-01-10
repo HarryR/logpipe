@@ -14,14 +14,14 @@ typedef struct {
     size_t count;
     size_t idx;
     logstep_t *steps;
-} logsteps_t ;
+} logsteps_t;
 
 void logsteps_init(logsteps_t *steps);
 void logsteps_free(logsteps_t *steps);
 int logsteps_step(logsteps_t *steps, void *arg_A, void *arg_B);
-int logsteps_add(logsteps_t *steps, const char *format, const logmod_t **mods);
+int logsteps_add(logsteps_t *steps, const char *format);
 int logsteps_count(const logsteps_t *steps);
+int logsteps_idx(const logsteps_t *steps);
 void logsteps_restart(logsteps_t *steps);
-
 
 #endif
