@@ -7,8 +7,6 @@ test/*.apacheclf
 test/*.logstash
 test/*.clfjson
 test/*.squid
-mod/squid.c
-mod/apacheclf.c
 bin/*
 *.o
 *.swp

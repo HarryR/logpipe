@@ -67,7 +67,7 @@ It is easy to program custom pipeline modlues, the interface is simple:
 	#include "logpipe-module.h"
 	#include <syslog.h>
 
-	static int run_syslog(void *ctx, str_t *buf, logline_t *line) {
+	static int run_syslog(void *ctx, str_t *buf, logmeta_t *meta) {
 		syslog(LOG_ERR, "%.*s", (int)buf->len, buf->ptr);
 		return 1;
 	}
@@ -75,14 +75,14 @@ It is easy to program custom pipeline modlues, the interface is simple:
 		"syslog", NULL, &run_syslog, NULL
 	};
 
-	static int init(void **ctx, str_t *str, logline_t *line) {
+	static int init(void **ctx, str_t *str, logmeta_t *meta) {
 		*ctx = malloc(...);
 		return 1;
 	}
-	static int test(void *ctx, str_t *str, logline_t *line) {
+	static int test(void *ctx, str_t *str, logmeta_t *meta) {
 		return 1;
 	}
-	static int shutdown(void *ctx, str_t *str, logline_t *line) {
+	static int shutdown(void *ctx, str_t *str, logmeta_t *meta) {
 		free(ctx);
 		return 1;
 	}
@@ -94,5 +94,10 @@ Then define the module in `logpipe-module.h` and rebuild logpipe.
 
 Each module has a name, an init function which takes a pointer to its own context pointer, then the run and shutdown functions which are given the context pointer directly.
 
-If a function returns 0 then the pipeline will halt there and the buffer will be written
-to stdout prefixed by the step 
+An initialisation function must return 0 or less to indicate a failure, if one fails then the step cannot be added to the pipeline - it must free all resources it allocated.
+
+The return value of the shutdown function will be ignored.
+
+If the return value of the execute function is zero the pipeline will stop there and not continue, this is used to indicate that the a non-fatal error has occurred. If the return value of the execute function is below zero this indicates a fatal error has occurred and the whole pipeline should permanently stop. Values above zero are ignored.
+
+The `meta` context, passed as the third argument, enables plugins to manage information extracted from the buffer, for example parsing an Apache Combined Log Format line into its various fields.

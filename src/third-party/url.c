@@ -26,6 +26,7 @@
 
 #define STR_FREE(ptr) if (ptr && ptr!=NULL) { free(ptr); }
 
+#include "config.h"
 #include "url.h"
 //#include "file.h"
 #ifdef _OSD_POSIX
@@ -39,26 +40,6 @@
 #endif /*APACHE*/
 #endif /*_OSD_POSIX*/
 
-#ifndef HAVE_MEMRCHR
-/*
- * Reverse memchr()
- * Find the last occurrence of 'c' in the buffer 's' of size 'n'.
- */
-static void *
-memrchr(const void *s, int c, size_t n)
-{
-        const unsigned char *cp;
-
-        if (n != 0) {
-                cp = (unsigned char *)s + n;
-                do {
-                        if (*(--cp) == (unsigned char)c)
-                                return((void *)cp);
-                } while (--n != 0);
-        }
-        return(NULL);
-}
-#endif
 
 
 /* {{{ free_url

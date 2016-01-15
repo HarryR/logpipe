@@ -2,9 +2,6 @@ PROJECT (logpipe_core C)
 
 INCLUDE(CheckFunctionExists)
 
-FILE(GLOB core_sources "${PROJECT_SOURCE_DIR}/*.c")
-FILE(GLOB core_includes "${PROJECT_SOURCE_DIR}/*.h")
-
 # We have a portable timegm function available
 CHECK_FUNCTION_EXISTS (timegm HAVE_TIMEGM)
 IF (NOT HAVE_TIMEGM)
@@ -20,6 +17,22 @@ IF (NOT HAVE_MEMRCHR)
     SET(core_sources ${core_sources} "${PROJECT_SOURCE_DIR}/portable/memrchr.c")
     SET(core_includes ${core_sources} "${PROJECT_SOURCE_DIR}/portable/memrchr.h")
 ENDIF (NOT HAVE_MEMRCHR)
+
+
+#
+# Ragel is used by the parser
+FIND_PROGRAM (RAGEL "ragel")
+IF (RAGEL)
+    MESSAGE (STATUS "Ragel found at: ${RAGEL}")
+ELSE (RAGEL)
+    MESSAGE (fatal_error "ragel not found")
+ENDIF (RAGEL)
+function(ragel_gen in_rl)
+    add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${in_rl}.c
+      COMMAND ${RAGEL} -G2 -C -o ${CMAKE_CURRENT_BINARY_DIR}/${in_rl}.c ${CMAKE_CURRENT_SOURCE_DIR}/${in_rl}.rl -I ${CMAKE_CURRENT_SOURCE_DIR}
+      DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${in_rl}.rl
+      )
+endfunction(ragel_gen)
 
 
 #
@@ -58,7 +71,19 @@ CONFIGURE_FILE (
 )
 
 INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR})
-INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/../extsrc/)
-INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/../)
+INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/third-party)
+INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/..)
 
-add_library(logpipe_core STATIC ${core_sources})
+
+FILE(GLOB core_sources "${PROJECT_SOURCE_DIR}/*.c")
+FILE(GLOB core_includes "${PROJECT_SOURCE_DIR}/*.h")
+
+RAGEL_GEN(third-party/apacheclf)
+RAGEL_GEN(third-party/squid)
+FILE(GLOB mod_sources "${PROJECT_SOURCE_DIR}/mod/*.c")
+set(mod_sources ${mod_sources} mod/apacheclf.c mod/squid.c)
+
+FILE(GLOB thirdparty_sources "${PROJECT_SOURCE_DIR}/third-party/*.c")
+FILE(GLOB thirdparty_includes "${PROJECT_SOURCE_DIR}/third-party/*.h")
+
+add_library(logpipe_core STATIC ${core_sources} ${mod_sources} ${thirdparty_sources})
