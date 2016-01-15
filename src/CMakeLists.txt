@@ -78,8 +78,8 @@ INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/..)
 FILE(GLOB core_sources "${PROJECT_SOURCE_DIR}/*.c")
 FILE(GLOB core_includes "${PROJECT_SOURCE_DIR}/*.h")
 
-RAGEL_GEN(third-party/apacheclf)
-RAGEL_GEN(third-party/squid)
+RAGEL_GEN(mod/apacheclf)
+RAGEL_GEN(mod/squid)
 FILE(GLOB mod_sources "${PROJECT_SOURCE_DIR}/mod/*.c")
 set(mod_sources ${mod_sources} mod/apacheclf.c mod/squid.c)
 
