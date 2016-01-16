@@ -19,7 +19,7 @@ logpipe_t *logpipe_new(void) {
 	}
 	pipe->is_stopping = 0;
 	str_init(&pipe->buf);
-	logmeta_clear(&pipe->meta);
+	logmeta_init(&pipe->meta);
 	logsteps_init(&pipe->steps);
 	return pipe;
 }
@@ -35,9 +35,9 @@ void logpipe_destroy(logpipe_t *pipe) {
 }
 
 
-int logpipe_step(logpipe_t *pipe, int *error) {
+int logpipe_step(logpipe_t *pipe) {
 	assert( pipe );
-	return logsteps_step(&pipe->steps, &pipe->buf, &pipe->meta, error);
+	return logsteps_step(&pipe->steps, &pipe->buf, &pipe->meta);
 }
 
 
@@ -46,24 +46,23 @@ void logpipe_restart(logpipe_t *pipe) {
 }
 
 
-int logpipe_run(logpipe_t *pipe, int *error) {
+int logpipe_run(logpipe_t *pipe) {
 	int idx = 0;
-	int step;
 	assert( pipe );
-	*error = 0;
 	logsteps_restart(&pipe->steps);
-	if( logpipe_steps_count(pipe) ) {		
-		while( (step = logpipe_step(pipe, error)) > 0 ) {
-			if( step < 0 || *error <= 0 ) {
-				break;
+	while( logpipe_steps_index(pipe) < logpipe_steps_count(pipe) ) {
+		int ret_code = logpipe_step(pipe);
+		if( ret_code <= 0 ) {
+			// logpipe_step returns negative if the pipeline
+			// must be permanently halted
+			if( ret_code < 0 ) {
+				return -1;
 			}
-			idx += 1;
-			/* step will be zero when it reaches the last step */
+			// Otherwise end up returning whichever step index
+			// that the pipeline got up to.
+			break;
 		}
 		idx += 1;
-	}
-	if( error ) {
-		*error = 0;
 	}
 	return idx;
 }
@@ -73,9 +72,8 @@ int logpipe_run_forever(logpipe_t *pipe) {
 	assert( pipe );		
 	if( logpipe_steps_count(pipe) ) {
 		while( ! pipe->is_stopping ) {
-			int error = 0;
-			int step = logpipe_run(pipe, &error);
-			if( step != logpipe_steps_count(pipe) || error ) {
+			int ret_code = logpipe_run(pipe);
+			if( ret_code < 0 ) {
 				break;
 			}
 		}

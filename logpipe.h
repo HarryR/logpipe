@@ -53,13 +53,14 @@ void logpipe_destroy(logpipe_t *pipe);
  * Upon a successful run, the return value == logpipe_steps_count(..)
  * @return returns index of last step which was run
  */
-int logpipe_run(logpipe_t *pipe, int *error);
+int logpipe_run(logpipe_t *pipe);
 
 /**
  * Execute a pipeline step
- * @return Number of steps remaining
+ * @return negative if pipeline must permanently stop,
+ * @return zero if pipeline cannot move forward
  */
-int logpipe_step(logpipe_t *pipe, int *error);
+int logpipe_step(logpipe_t *pipe);
 
 /**
  * Execute the pipeline again & again forever
@@ -83,13 +84,6 @@ void logpipe_restart(logpipe_t *pipe);
  * @return step count after adding, zero or negative on error
  */
 int logpipe_steps_add(logpipe_t *pipe, const char *format);
-
-/**
- * Remove a step from the logpipe
- * @param step index to remove
- * @return step count after adding, zero or negative on error
- */
-int logpipe_steps_del(logpipe_t *pipe, int step);
 
 /**
  * @return Number of steps in the pipeline

@@ -18,7 +18,7 @@ typedef struct {
 
 void logsteps_init(logsteps_t *steps);
 void logsteps_free(logsteps_t *steps);
-int logsteps_step(logsteps_t *steps, void *arg_A, void *arg_B, int *error);
+int logsteps_step(logsteps_t *steps, void *arg_A, void *arg_B);
 int logsteps_add(logsteps_t *steps, const char *format);
 int logsteps_count(const logsteps_t *steps);
 int logsteps_idx(const logsteps_t *steps);

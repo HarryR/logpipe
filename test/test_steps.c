@@ -9,8 +9,8 @@ MU_TEST(test_steps_empty) {
 
 	mu_check(logsteps_count(&steps) == 0);
 	mu_check(logsteps_idx(&steps) == 0);
-	mu_check(logsteps_step(&steps, NULL, NULL, NULL) < 0);
-	mu_check(logsteps_step(&steps, NULL, NULL, NULL) < 0);
+	mu_check(logsteps_step(&steps, NULL, NULL) <= 0);
+	mu_check(logsteps_step(&steps, NULL, NULL) <= 0);
 	mu_check(logsteps_idx(&steps) == 0);
 
 	logsteps_restart(&steps);
@@ -31,8 +31,8 @@ MU_TEST(test_steps_one) {
 
 	mu_check(logsteps_add(&steps, "debug.randblank") == 1);
 	mu_check(logsteps_count(&steps) == 1);
-	mu_check(logsteps_step(&steps, &buf, &meta, NULL) == 0);
-	mu_check(logsteps_step(&steps, &buf, &meta, NULL) < 0);
+	mu_check(logsteps_step(&steps, &buf, &meta) != 0);
+	mu_check(logsteps_step(&steps, &buf, &meta) == 0);
 	mu_check(logsteps_idx(&steps) == 1);
 
 	logsteps_restart(&steps);

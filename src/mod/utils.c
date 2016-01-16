@@ -74,7 +74,7 @@ static int run_FILE_read(void *ctx, str_t *str, logmeta_t *meta) {
 	char buf[MAX_LINE_LENGTH];
 	str_clear(str);
 	if( ! fgets(buf, MAX_LINE_LENGTH, ctx) ) {
-		return 0;
+		return -1;
 	}
 	size_t len = strlen(buf);
 	if( buf[len-1] == '\n' ) {
@@ -99,7 +99,13 @@ static int init_FILE_stderr(void *ctx, str_t *str, logmeta_t *meta) {
 
 static int run_FILE_write(void *ctx, str_t *str, logmeta_t *meta) {
 	if( ! str_isempty(str) ) {
-		fwrite(str_ptr(str), str_len(str), 1, ctx);
+		if( fwrite(str_ptr(str), str_len(str), 1, ctx) != 1 ) {
+			if( feof(ctx) ) {
+				return -1;
+			}
+			// XXX: if we fail to write... halt the pipeline?
+			return 0;
+		}
 		if( str_char(str, str_len(str)) != '\n' ) {
 			fwrite("\n", 1, 1, ctx);
 		}
