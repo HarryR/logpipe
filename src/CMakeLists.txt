@@ -2,6 +2,9 @@ PROJECT (logpipe_core C)
 
 INCLUDE(CheckFunctionExists)
 
+FILE(GLOB core_sources "${PROJECT_SOURCE_DIR}/*.c")
+FILE(GLOB core_includes "${PROJECT_SOURCE_DIR}/*.h")
+
 # We have a portable timegm function available
 CHECK_FUNCTION_EXISTS (timegm HAVE_TIMEGM)
 IF (NOT HAVE_TIMEGM)
@@ -73,10 +76,6 @@ CONFIGURE_FILE (
 INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR})
 INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/third-party)
 INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/..)
-
-
-FILE(GLOB core_sources "${PROJECT_SOURCE_DIR}/*.c")
-FILE(GLOB core_includes "${PROJECT_SOURCE_DIR}/*.h")
 
 RAGEL_GEN(mod/apacheclf)
 RAGEL_GEN(mod/squid)
