@@ -1,16 +1,16 @@
 before_install:
-	- sudo apt-get update -qq 
-	- sudo apt-get install -qq -y ragel zzuf
+  - sudo apt-get update -qq
+  - sudo apt-get install -qq -y ragel zzuf
 
 script:
-	- cmake .
-	- make
-	- make test
-	- ./test.sh
+  - cmake .
+  - make
+  - make test
+  - ./test.sh
 
 git:
-	depth: 3
+  depth: 3
 
 branches:
-	only:
-		- master
+  only:
+    - master
