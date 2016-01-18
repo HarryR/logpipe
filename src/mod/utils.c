@@ -79,6 +79,7 @@ static int run_FILE_read(void *ctx, str_t *str, logmeta_t *meta) {
 	size_t len = strlen(buf);
 	if( buf[len-1] == '\n' ) {
 		buf[len-1] = 0;
+		len -= 1;
 	}
 	str_append(str, buf, len);
 	return 1;
