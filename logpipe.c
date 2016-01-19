@@ -11,7 +11,7 @@
 
 static void show_mods() {
   int i = 0;
-  fprintf(stderr, "Mods:\n\n");
+  fprintf(stderr, "Available steps:\n\n");
   while( builtin_mods[i] ) {
     const logmod_t *mod = builtin_mods[i];
     if( ! mod->name ) {
@@ -26,6 +26,11 @@ static void show_mods() {
 
 static void show_help(char *program) {
     fprintf(stderr, "Usage: %s <step> [step ...]\n\n", program);
+    fprintf(stderr, "Examples:\n\n");
+    fprintf(stderr, "   logpipe stdin squid.logfile_daemon ...\n");
+    fprintf(stderr, "    - for use in Squid as with `logfile_daemon`\n\n");
+    fprintf(stderr, "   logpipe stdin parse.apacheclf print.clfjson stdout\n");
+    fprintf(stderr, "    - convert combined log format to JSON\n\n");
     show_mods();
 }
 
