@@ -174,3 +174,56 @@ static int print_squid(void *ctx, str_t *str, logmeta_t *meta) {
 const logmod_t mod_print_squid = {
   "print.squid", NULL, print_squid, NULL
 };
+
+
+/*
+Squid sends a number of commands to the log daemon. These are sent in the first byte of each input line:
+
+  L<data>\n - logfile data
+  R\n - rotate file
+  T\n - truncate file
+  O\n - re-open file
+  F\n - flush file
+  r<n>\n - set rotate count to <n>
+  b<n>\n - 1 = buffer output, 0 = don't buffer output
+ */
+static int squid_logfile_daemon(void *ctx, str_t *buf, logmeta_t *meta) {
+  if( ! str_len(buf) ) {
+    return 0;
+  }
+  unsigned char *ptr = buf->ptr;
+  size_t len = buf->len;
+
+  // In some situations (e.g. daemon queue overflow under high load),
+  // it is possible for the buffer to fill up with many L characters
+  // but without any line data. Skip all preceeding 'L' characters
+  while( *ptr == 'L' ) {
+    // Replace L characters with spaces
+    *ptr = ' ';
+    len--;
+    ptr++;
+  }
+  if( ! len ) {
+    return 0;
+  }
+
+  // The next character may be a control byte, if it is - discard line
+  switch( *ptr ) {
+  case 0:
+  case '\n':
+  case 'R':
+  case 'T':
+  case 'O':
+  case 'F':
+  case 'b':
+  case 'r':
+    return 0;
+  }
+
+  // Line can be processed, spaces at beginning of line will be skipped
+  return 1;
+}
+
+const logmod_t mod_squid_logfile_daemon = {
+  "squid.logfile_daemon", NULL, squid_logfile_daemon, NULL
+};
