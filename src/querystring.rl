@@ -20,11 +20,11 @@
 		;
 
 	pair = (key "=" value)
-	
+
 		   >{ str_init(&key);
 		   	  str_init(&val); }
 		   %{ 
-		   		if( str_len(&key) && str_len(&val) ) {
+		   		if( str_len(&key) ) {
 		   			key.len = php_url_decode((char*)key.ptr, key.len);
 		      		val.len = php_url_decode((char*)val.ptr, val.len);
 		      		output = strpair_add(output, &key, &val);
