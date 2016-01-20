@@ -35,11 +35,11 @@ typedef struct {
     struct pair_t *next;
 } pair_t;
 
-int pair_count(const pair_t *pair);
-pair_t *pair_clear(pair_t *pair);
-pair_t *pair_add_give(pair_t *pair, str_t *key, str_t *val);
-pair_t *pair_add(pair_t *pair, str_t *key, str_t *val);
-str_t *pair_bykey(pair_t *pair, str_t *key);
-str_t *pair_byval(pair_t *pair, str_t *val);
+int strpair_count(const pair_t *pair);
+pair_t *strpair_clear(pair_t *pair);
+pair_t *strpair_add_give(pair_t *pair, str_t *key, str_t *val);
+pair_t *strpair_add(pair_t *pair, const str_t *key, const str_t *val);
+pair_t *strpair_bykey(pair_t *pair, const str_t *key);
+pair_t *strpair_byval(pair_t *pair, const str_t *val);
 
 #endif

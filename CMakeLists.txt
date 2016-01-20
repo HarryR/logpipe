@@ -44,6 +44,14 @@ if (CMAKE_SYSTEM_NAME MATCHES "Linux")
     target_link_libraries(test_logpipe -lrt)
 endif ()
 
+add_executable(test_querystring test/test_querystring.c)
+add_dependencies(test_querystring test_querystring)
+add_test(test_querystring bin/test_querystring)
+target_link_libraries(test_querystring logpipe_core)
+if (CMAKE_SYSTEM_NAME MATCHES "Linux")
+    target_link_libraries(test_querystring -lrt)
+endif ()
+
 add_custom_target(bin-dir ALL
     COMMAND ${CMAKE_COMMAND} -E make_directory bin/)
 

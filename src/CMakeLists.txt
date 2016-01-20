@@ -77,6 +77,9 @@ INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR})
 INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/third-party)
 INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/..)
 
+RAGEL_GEN(querystring)
+set(core_sources ${core_sources} querystring.c)
+
 RAGEL_GEN(mod/apacheclf)
 RAGEL_GEN(mod/squid)
 FILE(GLOB mod_sources "${PROJECT_SOURCE_DIR}/mod/*.c")

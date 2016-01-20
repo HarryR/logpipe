@@ -1,20 +1,9 @@
 #include <stdio.h>
 #include <string.h>
-#include <syslog.h>
 
 #include "logpipe-module.h"
 
 #define MAX_LINE_LENGTH 8192
-
-static int run_syslog(void *ctx, str_t *str, logmeta_t *meta) {
-	syslog(LOG_ERR, "%.*s", (int)str_len(str), str_ptr(str));
-	return 1;
-}
-
-const logmod_t mod_syslog = {
-	"syslog", NULL, &run_syslog, NULL
-};
-
 
 static int reset_str(void *ctx, str_t *str, logmeta_t *meta) {
 	if( str ) {

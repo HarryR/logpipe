@@ -115,8 +115,10 @@ int str_eq(const str_t *a, const str_t *b) {
     if( ! a && ! b ) return 0;
     if( ! a && b ) return -1;
     if( a && ! b ) return 1;
-    assert( a && b );
-    return memcmp(a->ptr, b->ptr, (a->len < b->len ? a->len : b->len));
+    if( a->len != b->len ) {
+        return b->len - a->len;
+    }
+    return memcmp(a->ptr, b->ptr, a->len);
 }
 
 
@@ -132,7 +134,7 @@ str_t str_clone(const str_t *input) {
 
 // -------
 
-int pair_count( const pair_t *pair ) {
+int strpair_count( const pair_t *pair ) {
     int i = 0;
     while( pair ) {
         i += 1;
@@ -141,7 +143,7 @@ int pair_count( const pair_t *pair ) {
     return i;
 }
 
-pair_t *pair_clear( pair_t *pair ) {
+pair_t *strpair_clear( pair_t *pair ) {
     pair_t *old;
     int i = 0;
     while( pair ) {
@@ -164,15 +166,15 @@ pair_t *strpair_add_give(pair_t *pair, str_t *key, str_t *val) {
     return newpair;
 }
 
-pair_t *strpair_add(pair_t *pair, str_t *key, str_t *val) {
+pair_t *strpair_add(pair_t *pair, const str_t *key, const str_t *val) {
     str_t new_key = str_clone(key);
     str_t new_val = str_clone(val);
     return strpair_add_give(pair, &new_key, &new_val);
 }
 
-pair_t *strpair_bykey(pair_t *pair, str_t *key) {
+pair_t *strpair_bykey(pair_t *pair, const str_t *key) {
     while( pair ) {
-        if( str_eq(&pair->key, key) )  {
+        if( ! str_eq(&pair->key, key) )  {
             return pair;
         }
         pair = (pair_t*)pair->next;
@@ -180,9 +182,9 @@ pair_t *strpair_bykey(pair_t *pair, str_t *key) {
     return NULL;
 }
 
-pair_t *strpair_byval(pair_t *pair, str_t *val) {
+pair_t *strpair_byval(pair_t *pair, const str_t *val) {
     while( pair ) {
-        if( str_eq(&pair->val, val) )  {
+        if( ! str_eq(&pair->val, val) )  {
             return pair;
         }
         pair = (pair_t*)pair->next;
