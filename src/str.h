@@ -21,7 +21,11 @@ int str_ptime_rfc1123(const str_t *str, struct tm *output);
 int str_ptime_epoch_secs(const str_t *str, struct tm *output);
 size_t str_len(const str_t *str);
 char str_char(str_t *str, size_t offset);
+int str_cmp(const str_t *a, const str_t *b);
 int str_eq(const str_t *a, const str_t *b);
+int str_casecmp(const str_t *a, const str_t *b);
+int str_caseeq(const str_t *a, const str_t *b);
+int str_caseeq_cstr(const str_t *a, const char *b_str);
 char *str_rpos(str_t *str, const char c);
 char *str_ptr(str_t *str);
 str_t str_init_cstr(const char *cstr);
@@ -40,6 +44,7 @@ pair_t *strpair_clear(pair_t *pair);
 pair_t *strpair_add_give(pair_t *pair, str_t *key, str_t *val);
 pair_t *strpair_add(pair_t *pair, const str_t *key, const str_t *val);
 pair_t *strpair_bykey(pair_t *pair, const str_t *key);
+pair_t *strpair_bykey_cstr(pair_t *pair, const char *key);
 pair_t *strpair_byval(pair_t *pair, const str_t *val);
 
 #endif

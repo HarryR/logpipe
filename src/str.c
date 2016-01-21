@@ -111,7 +111,7 @@ int str_ptime_epoch_secs(const str_t *str, struct tm *output) {
     return str_ptime(str, "%s", output);
 }
 
-int str_eq(const str_t *a, const str_t *b) {
+int str_cmp(const str_t *a, const str_t *b) {
     if( ! a && ! b ) return 0;
     if( ! a && b ) return -1;
     if( a && ! b ) return 1;
@@ -119,6 +119,29 @@ int str_eq(const str_t *a, const str_t *b) {
         return b->len - a->len;
     }
     return memcmp(a->ptr, b->ptr, a->len);
+}
+
+int str_casecmp(const str_t *a, const str_t *b) {
+    if( ! a && ! b ) return 0;
+    if( ! a && b ) return -1;
+    if( a && ! b ) return 1;
+    if( a->len != b->len ) {
+        return b->len - a->len;
+    }
+    return strncasecmp((char*)a->ptr, (char*)b->ptr, a->len);
+}
+
+int str_eq(const str_t *a, const str_t *b) {
+    return str_cmp(a, b) == 0;
+}
+
+int str_caseeq(const str_t *a, const str_t *b) {
+    return str_casecmp(a, b) == 0;
+}
+
+int str_caseeq_cstr(const str_t *a, const char *b_str) {
+    const str_t b = {(unsigned char*)b_str, strlen(b_str)};
+    return str_casecmp(a, &b) == 0;
 }
 
 
@@ -174,7 +197,7 @@ pair_t *strpair_add(pair_t *pair, const str_t *key, const str_t *val) {
 
 pair_t *strpair_bykey(pair_t *pair, const str_t *key) {
     while( pair ) {
-        if( ! str_eq(&pair->key, key) )  {
+        if( str_eq(&pair->key, key) )  {
             return pair;
         }
         pair = (pair_t*)pair->next;
@@ -182,9 +205,14 @@ pair_t *strpair_bykey(pair_t *pair, const str_t *key) {
     return NULL;
 }
 
+pair_t *strpair_bykey_cstr(pair_t *pair, const char *key) {
+    const str_t key_str = {(unsigned char *)key, strlen(key)};
+    return strpair_bykey(pair, &key_str);
+}
+
 pair_t *strpair_byval(pair_t *pair, const str_t *val) {
     while( pair ) {
-        if( ! str_eq(&pair->val, val) )  {
+        if( str_eq(&pair->val, val) )  {
             return pair;
         }
         pair = (pair_t*)pair->next;

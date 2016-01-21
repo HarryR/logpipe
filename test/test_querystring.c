@@ -20,8 +20,8 @@ MU_TEST(test_querystring_basic1) {
 	mu_check(strpair_bykey(test1_output, &derp) != NULL);
 	mu_check(strpair_byval(test1_output, &merp) != NULL);
 	pair_t *found = strpair_byval(test1_output, &merp);
-	mu_check(!str_eq(&found->key, &derp));
-	mu_check(!str_eq(&found->val, &merp));
+	mu_check(str_eq(&found->key, &derp));
+	mu_check(str_eq(&found->val, &merp));
 	str_clear(&key);
 	str_clear(&val);
 }
