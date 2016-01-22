@@ -4,13 +4,15 @@
 #include "src/str.h"
 #include "src/logmeta.h"
 
-typedef int (*logmod_fn_t)(void *ctx, str_t *buf, logmeta_t *meta);
+typedef int (*logpipe_init_fn_t)(void **ctx, str_t *buf, logmeta_t *meta);
+typedef int (*logpipe_run_fn_t)(void *ctx, str_t *buf, logmeta_t *meta);
+typedef int (*logpipe_free_fn_t)(void *ctx, str_t *buf, logmeta_t *meta);
 
 typedef struct {
     const char *name;
-    logmod_fn_t init_fn;
-    logmod_fn_t run_fn;
-    logmod_fn_t free_fn;
+    logpipe_init_fn_t init_fn;
+    logpipe_run_fn_t run_fn;
+    logpipe_free_fn_t free_fn;
 } logmod_t;
 
 extern const logmod_t mod_stdin;

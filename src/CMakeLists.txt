@@ -21,6 +21,12 @@ IF (NOT HAVE_MEMRCHR)
     SET(core_includes ${core_sources} "${PROJECT_SOURCE_DIR}/portable/memrchr.h")
 ENDIF (NOT HAVE_MEMRCHR)
 
+CHECK_FUNCTION_EXISTS (syslog HAVE_SYSLOG)
+IF (HAVE_SYSLOG)
+    MESSAGE(STATUS "Enabling module: syslog")
+    SET(core_sources ${core_sources} "${PROJECT_SOURCE_DIR}/optmod/syslog.c")
+ENDIF (HAVE_SYSLOG)
+
 
 #
 # Ragel is used by the parser

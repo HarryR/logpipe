@@ -80,7 +80,7 @@ debug_anon(void *ctx, str_t *str, logmeta_t *meta) {
 }
 
 const logmod_t mod_debug_anon = {
-	"debug.anon", NULL, (logmod_fn_t)debug_anon, NULL
+	"debug.anon", NULL, debug_anon, NULL
 };
 
 

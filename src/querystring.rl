@@ -41,7 +41,7 @@ pair_t *querystring_parse(str_t *buf) {
 	// XXX: the input buffer will be mangled during parsing
 	//      because of the php_url_decode stage
 	int cs;
-    unsigned char *p, *pe, *ts, *eof;
+    unsigned char *p, *pe, *eof;
     pair_t *output = NULL;
 
     str_t key;
@@ -49,7 +49,6 @@ pair_t *querystring_parse(str_t *buf) {
 
     p = buf->ptr;
     eof = pe = buf->ptr + buf->len;
-    ts = p;
 
     %% write init;
     %% write exec;

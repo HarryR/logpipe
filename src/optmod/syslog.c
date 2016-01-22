@@ -1,9 +1,14 @@
 #include <syslog.h>
 #include <string.h>
+#include <stdlib.h>
 
 #include "logpipe-module.h"
 #include "querystring.h"
 #include "url.h"
+
+typedef struct {
+	int level;
+} modsyslog_ctx_t;
 
 static int parse_facility(str_t *str) {
 	if( str ) {		
@@ -49,6 +54,10 @@ static int parse_level(str_t *str) {
 }
 
 static int start_syslog(void **ctx, str_t *str, logmeta_t *meta) {
+	modsyslog_ctx_t *new_ctx = malloc(sizeof(modsyslog_ctx_t));
+	new_ctx->level = LOG_INFO;
+	*ctx = new_ctx;
+
 	php_url *url = php_url_parse((const char*)str->ptr);
 	if( ! url ) {
 		*ctx = (void*)LOG_LOCAL0;
@@ -83,7 +92,8 @@ static int start_syslog(void **ctx, str_t *str, logmeta_t *meta) {
 
 			strpair_clear(query);
 			openlog(ident, logopt, facility);
-			*ctx = (void*)level;
+
+			new_ctx->level = level;
 		}
 	}
 	php_url_free(url);
@@ -92,11 +102,13 @@ static int start_syslog(void **ctx, str_t *str, logmeta_t *meta) {
 
 static int stop_syslog(void *ctx, str_t *str, logmeta_t *meta) {
 	closelog();
+	free(ctx);
 	return 1;
 }
 
-static int run_syslog(void *ctx, str_t *str, logmeta_t *meta) {
-	syslog((int)ctx, "%.*s", (int)str_len(str), str_ptr(str));
+static int run_syslog(void *_ctx, str_t *str, logmeta_t *meta) {
+	modsyslog_ctx_t *ctx = _ctx;
+	syslog(ctx->level, "%.*s", (int)str_len(str), str_ptr(str));
 	return 1;
 }
 

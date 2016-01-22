@@ -74,16 +74,16 @@ static int run_FILE_read(void *ctx, str_t *str, logmeta_t *meta) {
 	return 1;
 }
 
-static int init_FILE_stdin(void *ctx, str_t *str, logmeta_t *meta) {
-	*((FILE**)ctx) = stdin;
+static int init_FILE_stdin(void **ctx, str_t *str, logmeta_t *meta) {
+	*ctx = stdin;
 	return 1;
 }
-static int init_FILE_stdout(void *ctx, str_t *str, logmeta_t *meta) {
-	*((FILE**)ctx) = stdout;
+static int init_FILE_stdout(void **ctx, str_t *str, logmeta_t *meta) {
+	*ctx = stdout;
 	return 1;
 }
-static int init_FILE_stderr(void *ctx, str_t *str, logmeta_t *meta) {
-	*((FILE**)ctx) = stderr;
+static int init_FILE_stderr(void **ctx, str_t *str, logmeta_t *meta) {
+	*ctx = stderr;
 	return 1;
 }
 
