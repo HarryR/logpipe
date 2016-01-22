@@ -99,7 +99,7 @@ const char *logpipe_buf_get(logpipe_t *pipe, int *len) {
 	if( len ) {
 		*len = str_len(&pipe->buf);
 	}
-	return str_ptr(&pipe->buf);
+	return (char*)str_ptr(&pipe->buf);
 }
 
 

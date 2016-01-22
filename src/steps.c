@@ -85,7 +85,9 @@ int logsteps_add(logsteps_t *steps, const char *format) {
 	steps->steps = realloc(steps->steps, sizeof(logstep_t) * (idx + 1));
 	steps->steps[idx].mod = mod;
 	if( mod->init_fn ) {
-		int mod_retn = 	mod->init_fn(&steps->steps[idx].ctx, NULL, NULL);
+		str_t format_str = str_init_cstr(format);
+		int mod_retn = 	mod->init_fn(&steps->steps[idx].ctx, &format_str, NULL);
+		str_clear(&format_str);
 		if( mod_retn <= 0 ) {
 			return mod_retn;
 		}

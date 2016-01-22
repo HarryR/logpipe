@@ -26,8 +26,9 @@ int str_eq(const str_t *a, const str_t *b);
 int str_casecmp(const str_t *a, const str_t *b);
 int str_caseeq(const str_t *a, const str_t *b);
 int str_caseeq_cstr(const str_t *a, const char *b_str);
-char *str_rpos(str_t *str, const char c);
-char *str_ptr(str_t *str);
+unsigned char *str_rpos(str_t *str, const char c);
+unsigned char *str_pos(str_t *str, const char c);
+unsigned char *str_ptr(str_t *str);
 str_t str_init_cstr(const char *cstr);
 int str_append_cstr(str_t *str, const char *cstr);
 

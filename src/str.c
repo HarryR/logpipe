@@ -16,8 +16,8 @@ void str_init(str_t *str) {
     str->len = 0;
 }
 
-char *str_ptr(str_t *str) {
-    if( str ) return (char*)str->ptr;
+unsigned char *str_ptr(str_t *str) {
+    if( str ) return str->ptr;
     return NULL;
 }
 
@@ -28,12 +28,20 @@ char str_char(str_t *str, size_t offset) {
     return str->ptr[offset];
 }
 
-char *str_rpos(str_t *str, const char c) {
+unsigned char *str_rpos(str_t *str, const char c) {
     assert( str );
     if( ! str->len || ! str->ptr ) {
         return NULL;
     }
     return memrchr(str->ptr, c, str->len);
+}
+
+unsigned char *str_pos(str_t *str, const char c) {
+    assert( str );
+    if( ! str->len || ! str->ptr ) {
+        return NULL;
+    }
+    return memchr(str->ptr, c, str->len);
 }
 
 void str_clear(str_t *str) {
