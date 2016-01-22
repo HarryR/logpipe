@@ -21,7 +21,7 @@ static int parse_option(str_t *str) {
 	int logopt = 0;
 	unsigned char *ptr = str_ptr(str);
 	size_t len = str_len(str);
-	while( len ) {
+	while( len > 0 ) {
 		str_t prev = {ptr, len};
 		unsigned char *next = str_pos(&prev, ',');
 		str_t current = {ptr, next == NULL ? len : (size_t)(next - ptr)};
