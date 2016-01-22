@@ -101,3 +101,24 @@ The return value of the shutdown function will be ignored.
 If the return value of the execute function is zero the pipeline will stop there and not continue, this is used to indicate that the a non-fatal error has occurred. If the return value of the execute function is below zero this indicates a fatal error has occurred and the whole pipeline should permanently stop. Values above zero are ignored.
 
 The `meta` context, passed as the third argument, enables plugins to manage information extracted from the buffer, for example parsing an Apache Combined Log Format line into its various fields.
+
+
+## Development Policy and Process
+
+While during the initial stages the development policy was very ad-hoc, code is committed to master while structure and requirements were being discovered. However now that the interfaces have stabilised and build systems have been put in place the policy is:
+
+ * Only Pull Requests and Ninja commits will be committed to master
+ * Ninja commits are emergency fixes directly to master
+ * Pull requests must have an Issue describing the changes, reasoning and are a forum for discussion
+ * Pull requests must successfully build with all CI build services
+ * Unit tests are encouraged, as is code documentation
+
+The process for contributing to the project is very simple:
+
+ 1. Fork the project and create a new branch
+ 2. Write code, make sure it works and compiles cleanly
+ 3. Find an existing Issue or create a new one
+ 4. Publish your pull request and link to it on the Issue
+ 5. Discuss your pull request with the project maintainer
+ 6. ...
+ 7. PROFIT!
