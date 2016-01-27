@@ -75,8 +75,8 @@ typedef enum
 #define LIBJSON_DEFAULT_STACK_SIZE 256
 #define LIBJSON_DEFAULT_BUFFER_SIZE 4096
 
-typedef int (*json_parser_callback)(void *userdata, int type, const char *data, uint32_t length);
-typedef int (*json_printer_callback)(void *userdata, const char *s, uint32_t length);
+typedef int (*json_parser_callback)(void *userdata, int type, const char *data, size_t length);
+typedef int (*json_printer_callback)(void *userdata, const char *s, size_t length);
 
 typedef struct {
 	uint32_t buffer_initial_size;
@@ -138,7 +138,7 @@ int json_parser_free(json_parser *parser);
  * the user can supplied a valid processed pointer that will
  * be fill with the number of processed characters before returning */
 int json_parser_string(json_parser *parser, const char *string,
-                       uint32_t length, uint32_t *processed);
+                       size_t length, size_t *processed);
 
 /** json_parser_char append one single char to the parser
  * return 0 if everything went ok, a JSON_ERROR_* otherwise */
@@ -155,10 +155,10 @@ int json_print_init(json_printer *printer, json_printer_callback callback, void 
 int json_print_free(json_printer *printer);
 
 /** json_print_pretty pretty print the passed argument (type/data/length). */
-int json_print_pretty(json_printer *printer, int type, const char *data, uint32_t length);
+int json_print_pretty(json_printer *printer, int type, const char *data, size_t length);
 
 /** json_print_raw prints without eye candy the passed argument (type/data/length). */
-int json_print_raw(json_printer *printer, int type, const char *data, uint32_t length);
+int json_print_raw(json_printer *printer, int type, const char *data, size_t length);
 
 /** json_print_args takes multiple types and pass them to the printer function
  * array, object and constants doesn't take a string and length argument.

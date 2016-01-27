@@ -4,8 +4,8 @@
 #include "json.h"
 
 static 
-int jp_callback (void *ctx, const char *data, uint32_t len) {
-    return str_append(ctx, data, len) >= 0;
+int jp_callback (void *ctx, const char *data, size_t len) {
+    return str_append(ctx, data, len) > 0;
 }
 
 static int
@@ -57,7 +57,7 @@ typedef struct {
 } clfjson_step_t;
 
 static int
-clfjson_state(void *_state, int type, const char *data, uint32_t length) {
+clfjson_state(void *_state, int type, const char *data, size_t length) {
 	clfjson_state_t *state = _state;
 	logmeta_t *meta = state->meta;
 	if( state->finished || state->errored ) {
@@ -116,7 +116,7 @@ static int
 parse_clfjson(void *ctx, str_t *str, logmeta_t *meta) {
 	clfjson_state_t state = {0, 0, 0, str, meta};
 	json_parser parser;
-	uint32_t processed = 0;
+	size_t processed = 0;
 	logmeta_clear(meta);
 	logmeta_hash(meta, str);
 	json_parser_init(&parser, NULL, clfjson_state, &state);

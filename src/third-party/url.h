@@ -33,7 +33,7 @@ typedef struct php_url {
 
 void php_url_free(php_url *theurl);
 php_url *php_url_parse(char const *str);
-php_url *php_url_parse_ex(char const *str, int length);
+php_url *php_url_parse_ex(char const *str, size_t length);
 int php_url_decode(char *str, int len); /* return value: length of decoded string */
 int php_raw_url_decode(char *str, int len); /* return value: length of decoded string */
 char *php_url_encode(char const *s, int len, int *new_length);

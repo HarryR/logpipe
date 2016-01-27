@@ -3,8 +3,8 @@
 #include "url.h"
 
 static 
-int jp_callback (void *ctx, const char *data, uint32_t len) {
-    return str_append(ctx, data, len) >= 0;
+int jp_callback (void *ctx, const char *data, size_t len) {
+    return str_append(ctx, data, len) > 0;
 }
 
 static int

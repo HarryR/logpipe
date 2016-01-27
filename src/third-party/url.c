@@ -99,7 +99,7 @@ php_url *php_url_parse(char const *str)
 
 /* {{{ php_url_parse
  */
-php_url *php_url_parse_ex(char const *str, int length)
+php_url *php_url_parse_ex(char const *str, size_t length)
 {
 	char port_buf[6];
 	php_url *ret = calloc(1, sizeof(php_url));
