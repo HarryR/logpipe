@@ -118,8 +118,7 @@ The process for contributing to the project is very simple:
 
  1. Fork the project and create a new branch
  2. Write code, make sure it works and compiles cleanly
- 3. Find an existing Issue or create a new one
- 4. Publish your pull request and link to it on the Issue
+ 4. Publish your pull request, describing the changes and linking to any appropriate Issues
  5. Discuss your pull request with the project maintainer
  6. ...
  7. PROFIT!

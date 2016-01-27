@@ -6,6 +6,13 @@
 #include <assert.h>
 #include <time.h>
 
+#ifdef _WIN32
+inline struct tm * gmtime_r(const time_t *sec, struct tm *result) {
+    gmtime_s(result, sec);
+    return result;
+}
+#endif
+
 int str_isempty(const str_t *str) {
     return ! str || ! str->ptr || str->len < 1;
 }

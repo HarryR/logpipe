@@ -30,6 +30,7 @@
 #include <ctype.h>
 #include <string.h>
 #include <time.h>
+#include "strncasecmp.h"
 
 /*
 * We do not implement alternate representations. However, we always
@@ -534,7 +535,7 @@ find_string(const unsigned char *bp, int *tgt, const char * const *n1,
 const char * const *n2, int c)
 {
 	int i;
-	unsigned int len;
+	size_t len;
 
 	/* check full name - then abbreviated ones */
 	for (; n1 != NULL; n1 = n2, n2 = NULL) {

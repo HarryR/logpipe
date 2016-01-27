@@ -12,6 +12,16 @@
 #cmakedefine HAVE_MEMRCHR
 #cmakedefine HAVE_TIMEGM
 #cmakedefine HAVE_STRPTIME
+#cmakedefine HAVE_STRNCASECMP
+#cmakedefine HAVE_STRNDUP
+
+#ifndef HAVE_STRNCASECMP
+#include "portable/strncasecmp.h"
+#endif
+
+#ifndef HAVE_STRNDUP
+#include "portable/strndup.h"
+#endif
 
 #ifndef HAVE_STRPTIME
 #include "portable/strptime.h"
