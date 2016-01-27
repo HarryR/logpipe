@@ -53,7 +53,7 @@ buffer and fills it with logstash JSON. This could then be printed using `stdout
 
 ### Windows
 
-	See: [appveyor.yml](appveyor.yml)
+See [appveyor.yml](appveyor.yml) for build instructions on Windows.
 
 ## Pipeline Steps
 
