@@ -106,6 +106,8 @@ int str_ptime(const str_t *str, const char *format, struct tm *output) {
         struct tm local_timestamp;
         fail = strptime((char*)str->ptr, format, &local_timestamp) == NULL;
         if( ! fail ) {
+            // XXX: Windows and some other platforms don't have tm_gmtoff
+            //      How do we adjust to UTC time from local time in that case?
             #ifdef HAVE_TM_GMTOFF
             long int gmtoff = local_timestamp.tm_gmtoff;
             time_t actual_time = timegm(&local_timestamp) - gmtoff;

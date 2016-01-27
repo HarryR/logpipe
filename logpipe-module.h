@@ -1,6 +1,7 @@
 #ifndef LOGPIPE_MODULES_H_
 #define LOGPIPE_MODULES_H_
 
+#include "config.h"
 #include "src/str.h"
 #include "src/logmeta.h"
 
@@ -33,11 +34,14 @@ extern const logmod_t mod_squid_logfile_daemon;
 extern const logmod_t mod_print_hyperstats;
 extern const logmod_t mod_print_logstash;
 extern const logmod_t mod_parse_clfjson;
-extern const logmod_t mod_syslog;
 extern const logmod_t mod_print_clfjson;
 extern const logmod_t mod_debug_line;
 extern const logmod_t mod_debug_anon;
 extern const logmod_t mod_debug_randblank;
+
+#ifdef HAVE_SYSLOG
+extern const logmod_t mod_syslog;
+#endif
 
 //extern const logmod_t mod_;
 
@@ -57,10 +61,14 @@ static const logmod_t *builtin_mods[] = {
   &mod_print_clfjson,
   &mod_print_logstash,
   &mod_print_hyperstats,
-  &mod_syslog,
   &mod_debug_line,
   &mod_debug_anon,
   &mod_debug_randblank,
+
+  #ifdef HAVE_SYSLOG
+  &mod_syslog,
+  #endif
+
   // &mod_...,
   0
 };

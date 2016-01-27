@@ -39,12 +39,23 @@ buffer and fills it with logstash JSON. This could then be printed using `stdout
 
 ## Getting Started
 
-    sudo apt-get install zzuf cmake ragel
-    cmake .
-    make
-    ./test.sh
+### Linux (Debian/Ubuntu flavour)
 
-## Commands
+    sudo apt-get install zzuf cmake ragel
+    cmake . && make && ./test.sh
+
+### OSX
+
+[Homebrew](http://brew.sh/) is a good place to get the necessary dependencies.
+
+	brew install zzuf cmake ragel
+	cmake . && make && ./test.sh
+
+### Windows
+
+	See: [appveyor.yml](appveyor.yml)
+
+## Pipeline Steps
 
  * reset.str - Empty string buffer
  * reset.line - Empty line struct
