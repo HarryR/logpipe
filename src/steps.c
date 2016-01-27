@@ -75,7 +75,7 @@ int logsteps_step(logsteps_t *steps, void *arg_A, void *arg_B) {
 }
 
 
-int logsteps_add(logsteps_t *steps, const char *format) {
+size_t logsteps_add(logsteps_t *steps, const char *format) {
 	const logmod_t *mod = logsteps_findmod(format);
 	assert( steps != NULL );
 	if( ! mod ) {
@@ -97,13 +97,13 @@ int logsteps_add(logsteps_t *steps, const char *format) {
 }
 
 
-int logsteps_count(const logsteps_t *steps) {
+size_t logsteps_count(const logsteps_t *steps) {
 	assert( steps != NULL );
 	return steps->count;
 }
 
 
-int logsteps_idx(const logsteps_t *steps) {
+size_t logsteps_idx(const logsteps_t *steps) {
 	assert( steps != NULL );
 	return steps->idx;
 }

@@ -17,6 +17,9 @@ if ("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU" OR
 elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
     set(warnings "/W4 /WX /EHsc")
 endif()
+if ("${CMAKE_C_COMPILER_ID}" STREQUAL "Clang")
+    set(warnings "${warnings} -Weverything")
+endif()
 set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS} ${warnings}")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${warnings}")
 

@@ -34,7 +34,7 @@
  * @return         number of bytes written, or a negative value in case of
  *                 invalid input
  */
-size_t base64_decode(uint8_t *out, const char *in, int out_size);
+long base64_decode(uint8_t *out, const char *in, long out_size);
 
 /**
  * Encode data to base64 and null-terminate.

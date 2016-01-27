@@ -4,14 +4,14 @@
 #include "logpipe-module.h"
 
 
-static void save_str(logmeta_t *meta, logpipe_field_t field, const char *data, int len) {
+static void save_str(logmeta_t *meta, logpipe_field_t field, const char *data, size_t len) {
   str_t *field_str = logmeta_field(meta, field);  
   if( len == 0 || (len == 1 && data[0] == '-') ) {
     return;
   }
   str_append(field_str, data, len);
 }
-#define SAVE_LINE_STR(field) { save_str(meta, field, (const char*)ts, p - ts); }
+#define SAVE_LINE_STR(field) { save_str(meta, field, (const char*)ts, (size_t)(p - ts)); }
 
 %%{
   machine parser_apacheclf;

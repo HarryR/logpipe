@@ -457,7 +457,7 @@ static int buffer_push_escape(json_parser *parser, unsigned char next)
 
 #define CHK(f) ({ ret = f; if (ret) return ret; })
 
-int act_uc(json_parser *parser)
+static int act_uc(json_parser *parser)
 {
 	int ret;
 	CHK(decode_unicode_char(parser));
@@ -465,7 +465,7 @@ int act_uc(json_parser *parser)
 	return 0;
 }
 
-int act_yb(json_parser *parser)
+static int act_yb(json_parser *parser)
 {
 	if (!parser->config.allow_yaml_comments)
 		return JSON_ERROR_COMMENT_NOT_ALLOWED;
@@ -473,7 +473,7 @@ int act_yb(json_parser *parser)
 	return 0;
 }
 
-int act_cb(json_parser *parser)
+static int act_cb(json_parser *parser)
 {
 	if (!parser->config.allow_c_comments)
 		return JSON_ERROR_COMMENT_NOT_ALLOWED;
@@ -481,13 +481,13 @@ int act_cb(json_parser *parser)
 	return 0;
 }
 
-int act_ce(json_parser *parser)
+static int act_ce(json_parser *parser)
 {
 	parser->state = (parser->save_state > STATE__A) ? STATE_OK : parser->save_state;
 	return 0;
 }
 
-int act_ob(json_parser *parser)
+static int act_ob(json_parser *parser)
 {
 	int ret;
 	CHK(do_callback(parser, JSON_OBJECT_BEGIN));

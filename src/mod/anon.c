@@ -11,7 +11,7 @@
 
 static uint16_t lfsr = 0xD359u;
 
-uint16_t get_lfsr() {
+static uint16_t get_lfsr() {
     unsigned lsb = lfsr & 1;   /* Get LSB (i.e., the output bit). */
     lfsr >>= 1;                /* Shift register */
     lfsr ^= (-lsb) & 0xB400u;  /* If the output bit is 1, apply toggle mask.
@@ -57,7 +57,7 @@ static void anon_str(logmeta_t *meta, logpipe_field_t field) {
 
 	size_t i;
 	for( i = 0; i < str->len; i++ ) {
-		str->ptr[i] = rotX(str->ptr[i]);
+		str->ptr[i] = (unsigned char)rotX((char)str->ptr[i]);
 	}
 }
 
@@ -86,7 +86,7 @@ const logmod_t mod_debug_anon = {
 
 static int
 debug_randblank(void *ctx, str_t *str, logmeta_t *meta) {
-  int i;
+  logpipe_field_t i;
   assert( str );
   assert( meta );
   for( i = 0; i  < LOGPIPE_FIELDS_END; i++ ) {

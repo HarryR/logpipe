@@ -21,7 +21,7 @@ unsigned char *str_ptr(str_t *str) {
     return NULL;
 }
 
-char str_char(str_t *str, size_t offset) {
+unsigned char str_char(str_t *str, size_t offset) {
     if( str_isempty(str) || offset >= str_len(str) ) {
         return 0;
     }
@@ -60,38 +60,39 @@ size_t str_len(const str_t *str) {
     return str->len;
 }
 
-int str_append(str_t *str, const char *data, uint32_t length) {
+size_t str_append(str_t *str, const char *data, size_t length) {
     assert( str != NULL );
     str->ptr = realloc(str->ptr, str->len + length + 1);
     if( ! str->ptr ) {
         str->len = 0;
-        return -1;
+        return 0;
     }
     memcpy((char*)(str->ptr + str->len), data, length);
     
-    int old_len = str->len;
+    size_t old_len = str->len;
     str->len += length;
     str->ptr[str->len] = 0;
     return old_len;
 }
 
-int str_append_cstr(str_t *str, const char *cstr) {
-    uint32_t len = strlen(cstr);
+size_t str_append_cstr(str_t *str, const char *cstr) {
+    size_t len = strlen(cstr);
     return str_append(str, cstr, len);
+}
+
+size_t str_append_str(str_t *str, const str_t *b) {
+    assert( b );
+    return str_append(str, (const char *)b->ptr, b->len);
 }
 
 str_t str_init_cstr(const char *cstr) {
     str_t str;
     str_init(&str);
-    uint32_t len = strlen(cstr);
+    size_t len = strlen(cstr);
     str_append(&str, cstr, len);
     return str;
 }
 
-int str_append_str(str_t *str, const str_t *b) {
-    assert( b );
-    return str_append(str, (const char *)b->ptr, b->len);
-}
 
 int str_ptime(const str_t *str, const char *format, struct tm *output) {
     int fail = str_isempty(str);
@@ -124,7 +125,7 @@ int str_cmp(const str_t *a, const str_t *b) {
     if( ! a && b ) return -1;
     if( a && ! b ) return 1;
     if( a->len != b->len ) {
-        return b->len - a->len;
+        return (int)(b->len - a->len);
     }
     return memcmp(a->ptr, b->ptr, a->len);
 }
@@ -134,7 +135,7 @@ int str_casecmp(const str_t *a, const str_t *b) {
     if( ! a && b ) return -1;
     if( a && ! b ) return 1;
     if( a->len != b->len ) {
-        return b->len - a->len;
+        return (int)(b->len - a->len);
     }
     return strncasecmp((char*)a->ptr, (char*)b->ptr, a->len);
 }

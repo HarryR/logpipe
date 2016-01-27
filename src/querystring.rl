@@ -11,16 +11,15 @@
 
 	key = [^=]+
 		>{ key.ptr = p; }
-		%{ key.len = p - key.ptr; }
+		%{ key.len = (size_t)(p - key.ptr); }
 		;
 
 	value = [^&]+
 		>{ val.ptr = p; }
-		%{ val.len = p - val.ptr; }
+		%{ val.len = (size_t)(p - val.ptr); }
 		;
 
 	pair = (key "=" value)
-
 		   >{ str_init(&key);
 		   	  str_init(&val); }
 		   %{ 

@@ -12,15 +12,16 @@ typedef struct {
 
 int str_isempty(const str_t *str);
 str_t str_clone(const str_t *input);
-int str_append(str_t *str, const char *s, uint32_t length);
-int str_append_str(str_t *str, const str_t *b);
+size_t str_append(str_t *str, const char *s, size_t length);
+size_t str_append_str(str_t *str, const str_t *b);
+size_t str_append_cstr(str_t *str, const char *cstr);
 void str_init(str_t *str);
 void str_clear(str_t *str);
 int str_ptime(const str_t *str, const char *format, struct tm *output);
 int str_ptime_rfc1123(const str_t *str, struct tm *output);
 int str_ptime_epoch_secs(const str_t *str, struct tm *output);
 size_t str_len(const str_t *str);
-char str_char(str_t *str, size_t offset);
+unsigned char str_char(str_t *str, size_t offset);
 int str_cmp(const str_t *a, const str_t *b);
 int str_eq(const str_t *a, const str_t *b);
 int str_casecmp(const str_t *a, const str_t *b);
@@ -30,7 +31,6 @@ unsigned char *str_rpos(str_t *str, const char c);
 unsigned char *str_pos(str_t *str, const char c);
 unsigned char *str_ptr(str_t *str);
 str_t str_init_cstr(const char *cstr);
-int str_append_cstr(str_t *str, const char *cstr);
 
 
 struct pair_t;

@@ -46,14 +46,14 @@ static const uint8_t map2[] =
     0x2c, 0x2d, 0x2e, 0x2f, 0x30, 0x31, 0x32, 0x33
 };
 
-size_t base64_decode(uint8_t *out, const char *in, int out_size)
+long base64_decode(uint8_t *out, const char *in, long out_size)
 {
     size_t i, v;
     uint8_t *dst = out;
 
     v = 0;
     for (i = 0; in[i] && in[i] != '='; i++) {
-        unsigned int index= in[i]-43;
+        size_t index= in[i]-43;
         if (index>=SIZEOF_ARRAY(map2) || map2[index] == 0xff)
             return -1;
         v = (v << 6) + map2[index];
@@ -80,7 +80,7 @@ char *base64_encode(char *out, size_t out_size, const uint8_t *in, size_t in_siz
     char *ret, *dst;
     unsigned i_bits = 0;
     int i_shift = 0;
-    int bytes_remaining = in_size;
+    size_t bytes_remaining = in_size;
 
     if (in_size >= UINT_MAX / 4 ||
         out_size < BASE64_SIZE(in_size))

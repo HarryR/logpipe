@@ -66,7 +66,7 @@ void php_url_free(php_url *theurl)
 
 /* {{{ php_replace_controlchars
  */
-char *php_replace_controlchars_ex(char *str, int len)
+static char *php_replace_controlchars_ex(char *str, int len)
 {
 	unsigned char *s = (unsigned char *)str;
 	unsigned char *e = (unsigned char *)str + len;
@@ -87,7 +87,7 @@ char *php_replace_controlchars_ex(char *str, int len)
 } 
 /* }}} */
 
-char *php_replace_controlchars(char *str)
+static char *php_replace_controlchars(char *str)
 {
 	return php_replace_controlchars_ex(str, strlen(str));
 } 
