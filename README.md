@@ -1,8 +1,9 @@
 # LogPipe
 
-[![Build Status](https://drone.io/github.com/HarryR/logpipe/status.png)](https://drone.io/github.com/HarryR/logpipe/latest)
-[![Build Status](https://semaphoreci.com/api/v1/projects/009f6bc1-43e6-4ab1-8b3a-50cc19cccaa8/633027/badge.svg)](https://semaphoreci.com/harryr/logpipe)
-[![Build Status](https://travis-ci.org/HarryR/logpipe.svg)](https://travis-ci.org/HarryR/logpipe)
+[![Drone.io Build Status](https://drone.io/github.com/HarryR/logpipe/status.png)](https://drone.io/github.com/HarryR/logpipe/latest)
+[![SemophoreCI Build Status](https://semaphoreci.com/api/v1/projects/009f6bc1-43e6-4ab1-8b3a-50cc19cccaa8/633027/badge.svg)](https://semaphoreci.com/harryr/logpipe)
+[![Travis-CI Build Status](https://travis-ci.org/HarryR/logpipe.svg)](https://travis-ci.org/HarryR/logpipe)
+[![AppVeyor Build status](https://ci.appveyor.com/api/projects/status/lrx7m48u0220ql6t?svg=true)](https://ci.appveyor.com/project/harryr/logpipe)
 
 The logfile pipeline allows you to convert Apache Combined Log files
 and quickly convert them into Logstash or Hyperstats format.
@@ -38,12 +39,23 @@ buffer and fills it with logstash JSON. This could then be printed using `stdout
 
 ## Getting Started
 
-    sudo apt-get install zzuf cmake ragel
-    cmake .
-    make
-    ./test.sh
+### Linux (Debian/Ubuntu flavour)
 
-## Commands
+    sudo apt-get install zzuf cmake ragel
+    cmake . && make && ./test.sh
+
+### OSX
+
+[Homebrew](http://brew.sh/) is a good place to get the necessary dependencies.
+
+	brew install zzuf cmake ragel
+	cmake . && make && ./test.sh
+
+### Windows
+
+See [appveyor.yml](appveyor.yml) for build instructions on Windows.
+
+## Pipeline Steps
 
  * reset.str - Empty string buffer
  * reset.line - Empty line struct
@@ -117,8 +129,7 @@ The process for contributing to the project is very simple:
 
  1. Fork the project and create a new branch
  2. Write code, make sure it works and compiles cleanly
- 3. Find an existing Issue or create a new one
- 4. Publish your pull request and link to it on the Issue
+ 4. Publish your pull request, describing the changes and linking to any appropriate Issues
  5. Discuss your pull request with the project maintainer
  6. ...
  7. PROFIT!

@@ -1,6 +1,7 @@
 PROJECT (logpipe_core C)
 
 INCLUDE(CheckFunctionExists)
+INCLUDE(CheckStructHasMember)
 
 FILE(GLOB core_sources "${PROJECT_SOURCE_DIR}/*.c")
 FILE(GLOB core_includes "${PROJECT_SOURCE_DIR}/*.h")
@@ -13,7 +14,31 @@ IF (NOT HAVE_TIMEGM)
     SET(core_includes ${core_sources} "${PROJECT_SOURCE_DIR}/portable/timegm.h")
 ENDIF (NOT HAVE_TIMEGM)
 
-# Portable memrchr 
+# Portable strptime for Windows
+CHECK_FUNCTION_EXISTS (strptime HAVE_STRPTIME)
+IF (NOT HAVE_STRPTIME)
+    MESSAGE(STATUS "Using portable strptime")
+    SET(core_sources ${core_sources} "${PROJECT_SOURCE_DIR}/portable/strptime.c")
+    SET(core_includes ${core_sources} "${PROJECT_SOURCE_DIR}/portable/strptime.h")
+ENDIF (NOT HAVE_STRPTIME)
+
+# Portable strncasecmp for Windows
+CHECK_FUNCTION_EXISTS (strncasecmp HAVE_STRNCASECMP)
+IF (NOT HAVE_STRNCASECMP)
+    MESSAGE(STATUS "Using portable strncasecmp")
+    SET(core_sources ${core_sources} "${PROJECT_SOURCE_DIR}/portable/strncasecmp.c")
+    SET(core_includes ${core_sources} "${PROJECT_SOURCE_DIR}/portable/strncasecmp.h")
+ENDIF (NOT HAVE_STRNCASECMP)
+
+# Portable strndup (for Windows)
+CHECK_FUNCTION_EXISTS (strndup HAVE_STRNDUP)
+IF (NOT HAVE_STRNDUP)
+    MESSAGE (STATUS "Using portable strndup")
+    SET(core_sources ${core_sources} "${PROJECT_SOURCE_DIR}/portable/strndup.c")
+    SET(core_includes ${core_sources} "${PROJECT_SOURCE_DIR}/portable/strndup.h")
+ENDIF (NOT HAVE_STRNDUP)
+
+# Portable memrchr (for OSX)
 CHECK_FUNCTION_EXISTS (memrchr HAVE_MEMRCHR)
 IF (NOT HAVE_MEMRCHR)
     MESSAGE (STATUS "Using portable memrchr")
@@ -27,6 +52,7 @@ IF (HAVE_SYSLOG)
     SET(core_sources ${core_sources} "${PROJECT_SOURCE_DIR}/optmod/syslog.c")
 ENDIF (HAVE_SYSLOG)
 
+check_struct_has_member ("struct tm"   tm_gmtoff    time.h                   HAVE_TM_GMTOFF)
 
 #
 # Ragel is used by the parser
