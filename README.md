@@ -1,8 +1,9 @@
 # LogPipe
 
-[![Build Status](https://drone.io/github.com/HarryR/logpipe/status.png)](https://drone.io/github.com/HarryR/logpipe/latest)
-[![Build Status](https://semaphoreci.com/api/v1/projects/009f6bc1-43e6-4ab1-8b3a-50cc19cccaa8/633027/badge.svg)](https://semaphoreci.com/harryr/logpipe)
-[![Build Status](https://travis-ci.org/HarryR/logpipe.svg)](https://travis-ci.org/HarryR/logpipe)
+[![Drone.io Build Status](https://drone.io/github.com/HarryR/logpipe/status.png)](https://drone.io/github.com/HarryR/logpipe/latest)
+[![SemophoreCI Build Status](https://semaphoreci.com/api/v1/projects/009f6bc1-43e6-4ab1-8b3a-50cc19cccaa8/633027/badge.svg)](https://semaphoreci.com/harryr/logpipe)
+[![Travis-CI Build Status](https://travis-ci.org/HarryR/logpipe.svg)](https://travis-ci.org/HarryR/logpipe)
+[![AppVeyor Build status](https://ci.appveyor.com/api/projects/status/lrx7m48u0220ql6t?svg=true)](https://ci.appveyor.com/project/harryr/logpipe)
 
 The logfile pipeline allows you to convert Apache Combined Log files
 and quickly convert them into Logstash or Hyperstats format.

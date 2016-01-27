@@ -1,6 +1,5 @@
 #include "config.h"
 #include "str.h"
-// memrchr isn't on all platforms...
 
 #include <stdlib.h>
 #include <string.h>

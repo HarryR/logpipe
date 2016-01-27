@@ -11,6 +11,11 @@
 
 #cmakedefine HAVE_MEMRCHR
 #cmakedefine HAVE_TIMEGM
+#cmakedefine HAVE_STRPTIME
+
+#ifndef HAVE_STRPTIME
+#include "portable/strptime.h"
+#endif
 
 #ifndef HAVE_MEMRCHR
 #include "portable/memrchr.h"
