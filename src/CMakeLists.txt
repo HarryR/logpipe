@@ -1,6 +1,7 @@
 PROJECT (logpipe_core C)
 
 INCLUDE(CheckFunctionExists)
+INCLUDE(CheckStructHasMember)
 
 FILE(GLOB core_sources "${PROJECT_SOURCE_DIR}/*.c")
 FILE(GLOB core_includes "${PROJECT_SOURCE_DIR}/*.h")
@@ -51,6 +52,7 @@ IF (HAVE_SYSLOG)
     SET(core_sources ${core_sources} "${PROJECT_SOURCE_DIR}/optmod/syslog.c")
 ENDIF (HAVE_SYSLOG)
 
+check_struct_has_member ("struct tm"   tm_gmtoff    time.h                   HAVE_TM_GMTOFF)
 
 #
 # Ragel is used by the parser

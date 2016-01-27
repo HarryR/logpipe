@@ -106,8 +106,12 @@ int str_ptime(const str_t *str, const char *format, struct tm *output) {
         struct tm local_timestamp;
         fail = strptime((char*)str->ptr, format, &local_timestamp) == NULL;
         if( ! fail ) {
+            #ifdef HAVE_TM_GMTOFF
             long int gmtoff = local_timestamp.tm_gmtoff;
             time_t actual_time = timegm(&local_timestamp) - gmtoff;
+            #else
+            time_t actual_time = timegm(&local_timestamp);
+            #endif
             gmtime_r(&actual_time, output);
         }
     }
