@@ -83,13 +83,13 @@ void json_print_splitpath(json_printer *jp, char *path, size_t len) {
 	if( ! end ) {
 		end = path + len;
 	}
-	len = end - path;
+	len = (size_t)(end - path);
 
 	json_print_raw(jp, JSON_ARRAY_BEGIN, NULL, 0);
 	while (len > 0 && path <= end) {
 		char *slash = memchr(path + 1, '/', len - 1);
 		if( slash ) {
-			size_t slash_ofs = slash - path;
+			size_t slash_ofs = (size_t)(slash - path);
 			// Ignore double slashes
 			if( slash_ofs > 1 ) {
 				json_print_raw(jp, JSON_STRING, path, slash_ofs);

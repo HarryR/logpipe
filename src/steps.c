@@ -1,4 +1,3 @@
-#define USE_LOGPIPE_MODULES
 #include "logpipe-module.h"
 #include "steps.h"
 
@@ -23,7 +22,7 @@ static const logmod_t *logsteps_findmod(const char *name) {
   int i = 0;
   while( (mod = builtin_mods[i]) ) {
     if( ! mod->name ) break;
-    size_t len = name_end - name;
+    size_t len = (size_t)(name_end - name);
     if( strlen(mod->name) > len ) {
       len = strlen(mod->name);
     }
@@ -89,7 +88,7 @@ size_t logsteps_add(logsteps_t *steps, const char *format) {
 		int mod_retn = 	mod->init_fn(&steps->steps[idx].ctx, &format_str, NULL);
 		str_clear(&format_str);
 		if( mod_retn <= 0 ) {
-			return mod_retn;
+			return 0;
 		}
 	}
 	steps->count += 1;

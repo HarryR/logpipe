@@ -178,6 +178,13 @@ str_t str_clone(const str_t *input) {
 
 // -------
 
+pair_t *strpair_next(pair_t *pair) {
+    if( pair ) {
+        return (pair_t*)pair->next;
+    }
+    return NULL;
+}
+
 int strpair_count( const pair_t *pair ) {
     int i = 0;
     while( pair ) {
@@ -203,9 +210,19 @@ pair_t *strpair_clear( pair_t *pair ) {
 }
 
 pair_t *strpair_add_give(pair_t *pair, str_t *key, str_t *val) {
-    pair_t *newpair = malloc(sizeof(pair_t));
-    newpair->key = *key;
-    newpair->val = *val;
+    pair_t *newpair = malloc(sizeof(pair_t));    
+    if( key ) {
+        newpair->key = *key;
+    }
+    else {
+        str_init(&newpair->key);
+    }
+    if( val ) {
+        newpair->val = *val;
+    }
+    else {
+        str_init(&newpair->val);
+    }
     newpair->next = (struct pair_t *)pair;    
     return newpair;
 }
@@ -239,4 +256,9 @@ pair_t *strpair_byval(pair_t *pair, const str_t *val) {
         pair = (pair_t*)pair->next;
     }
     return NULL;
+}
+
+pair_t *strpair_byval_cstr(pair_t *pair, const char *val) {
+    const str_t val_str = {(unsigned char *)val, strlen(val)};
+    return strpair_byval(pair, &val_str);
 }

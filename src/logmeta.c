@@ -8,7 +8,7 @@ void logmeta_init(logmeta_t *meta) {
 }
 
 void logmeta_clear(logmeta_t *meta) {
-	int i;
+	logpipe_field_t i;
 	for( i = 0; i < LOGPIPE_FIELDS_END; i++ ) {
 		logmeta_field_clear(meta, i);
 	}

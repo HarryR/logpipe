@@ -3,6 +3,7 @@
 
 #include <stdlib.h>
 #include <assert.h>
+#include <string.h>
 
 struct logpipe {
 	int is_stopping;
@@ -82,19 +83,19 @@ int logpipe_run_forever(logpipe_t *pipe) {
 }
 
 
-int logpipe_steps_add(logpipe_t *pipe, const char *format) {
+size_t logpipe_steps_add(logpipe_t *pipe, const char *format) {
 	assert( pipe );
 	return logsteps_add(&pipe->steps, format);
 }
 
 
-int logpipe_steps_count(const logpipe_t *pipe) {
+size_t logpipe_steps_count(const logpipe_t *pipe) {
 	assert( pipe );
 	return logsteps_count(&pipe->steps);
 }
 
 
-const char *logpipe_buf_get(logpipe_t *pipe, int *len) {
+const char *logpipe_buf_get(logpipe_t *pipe, size_t *len) {
 	assert( pipe );
 	if( len ) {
 		*len = str_len(&pipe->buf);
@@ -103,18 +104,61 @@ const char *logpipe_buf_get(logpipe_t *pipe, int *len) {
 }
 
 
-int logpipe_steps_index(const logpipe_t *pipe) {
+size_t logpipe_steps_index(const logpipe_t *pipe) {
 	assert( pipe );
-	if( logsteps_count(&pipe->steps) == 0 ) {
-		return -1;
-	}
 	return logsteps_idx(&pipe->steps);
 }
 
 
-void logpipe_buf_set(logpipe_t *pipe, const char *str, int len) {
+void logpipe_buf_set(logpipe_t *pipe, const char *str, size_t len) {
 	assert( pipe );
 	assert( len >= 0 );
 	str_clear(&pipe->buf);
 	str_append(&pipe->buf, str, len);
+}
+
+
+int logpipe_test(int result, const char *steps_cstr, const char *input, const char *output) {
+	if( ! steps_cstr ) return 0;
+	const str_t steps_str = {steps_cstr, strlen(steps_cstr)};
+	pair_t *steps = strpair_split(&steps_str);
+	if( ! strpair_count(steps) ) return 0;
+
+	logpipe_t *pipe = logpipe_new();
+	if( ! pipe ) return 0;
+
+	pair_t *steps_iter = steps;
+	while( steps_iter ) {
+		if( logpipe_steps_add(pipe, (const char*)steps_iter->val.ptr) <= 0 ) {
+			logpipe_destroy(pipe);
+			return 0;
+		}
+		steps_iter = strpair_next(steps_iter);
+	}
+
+	if( input ) {
+		logpipe_buf_set(pipe, input, strlen(input));
+	}
+
+	int is_ok = 1;
+	int run_result = logpipe_run(pipe);
+	if( result == run_result ) {
+		size_t out_sz = 0;
+		const char *out = logpipe_buf_get(pipe, &out_sz);
+		if( output == NULL ) {
+			is_ok = (out == NULL) && (out_sz == 0);
+		}
+		else if( out_sz != strlen(output) ) {
+			is_ok = 0;
+		}
+		else {
+			is_ok = strncmp(out, output, out_sz) == 0;
+		}
+	}
+	else {
+		is_ok = 0;
+	}
+
+	logpipe_destroy(pipe);
+	return is_ok;
 }

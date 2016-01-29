@@ -40,12 +40,20 @@ typedef struct {
     struct pair_t *next;
 } pair_t;
 
+/**
+ * Split a string, deliminated by whitespace
+ * into a sequence of pairs containing only values
+ */
+pair_t *strpair_split(const str_t *str);
+
 int strpair_count(const pair_t *pair);
 pair_t *strpair_clear(pair_t *pair);
+pair_t *strpair_next(pair_t *pair);
 pair_t *strpair_add_give(pair_t *pair, str_t *key, str_t *val);
 pair_t *strpair_add(pair_t *pair, const str_t *key, const str_t *val);
 pair_t *strpair_bykey(pair_t *pair, const str_t *key);
 pair_t *strpair_bykey_cstr(pair_t *pair, const char *key);
 pair_t *strpair_byval(pair_t *pair, const str_t *val);
+pair_t *strpair_byval_cstr(pair_t *pair, const char *val);
 
 #endif

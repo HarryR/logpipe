@@ -39,6 +39,8 @@ buffer and fills it with logstash JSON. This could then be printed using `stdout
 
 ## Getting Started
 
+cmake and ragel are used heavily throughout the project to provide a portable build system and to create fast state machine based parsers with Less Bugs™.
+
 ### Linux (Debian/Ubuntu flavour)
 
     sudo apt-get install zzuf cmake ragel
@@ -53,7 +55,7 @@ buffer and fills it with logstash JSON. This could then be printed using `stdout
 
 ### Windows
 
-See [appveyor.yml](appveyor.yml) for build instructions on Windows.
+See [appveyor.yaml](appveyor.yaml) for build instructions on Windows.
 
 ## Pipeline Steps
 
@@ -71,6 +73,7 @@ See [appveyor.yml](appveyor.yml) for build instructions on Windows.
  * print.clfjson - FIll buffer with JSON CLF
  * print.logstash - Fill buffer with logstash JSON
  * print.hyperstats - Fill buffer with hyperstats JSON
+ * syslog - Send buffer to syslog
 
 ## Modules
 
