@@ -9,34 +9,31 @@
 #cmakedefine _XOPEN_SOURCE
 #endif
 
-#cmakedefine HAVE_MEMRCHR
-#cmakedefine HAVE_TIMEGM
-#cmakedefine HAVE_STRPTIME
-#cmakedefine HAVE_STRNCASECMP
-#cmakedefine HAVE_STRNDUP
-#cmakedefine HAVE_TM_GMTOFF
 #cmakedefine HAVE_SYSLOG
 
+#cmakedefine HAVE_STRNCASECMP
 #ifndef HAVE_STRNCASECMP
 #include "portable/strncasecmp.h"
 #endif
 
+#cmakedefine HAVE_STRNDUP
 #ifndef HAVE_STRNDUP
 #include "portable/strndup.h"
 #endif
 
-#ifndef HAVE_STRPTIME
+#cmakedefine HAVE_TM_GMTOFF
+#cmakedefine HAVE_STRPTIME
+#cmakedefine PORTABLE_STRPTIME
 #include "portable/strptime.h"
-#endif
 
+#cmakedefine HAVE_MEMRCHR
 #ifndef HAVE_MEMRCHR
 #include "portable/memrchr.h"
 #endif
 
+#cmakedefine HAVE_TIMEGM
 #ifndef HAVE_TIMEGM
 #include "portable/timegm.h"
 #endif
 
-
 #endif
-

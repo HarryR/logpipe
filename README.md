@@ -75,6 +75,10 @@ See [appveyor.yaml](appveyor.yaml) for build instructions on Windows.
  * print.hyperstats - Fill buffer with hyperstats JSON
  * syslog - Send buffer to syslog
 
+## Cmake Flags
+
+ * `-DPORTABLE_STRPTIME=1` - Use portable `strptime` even if libc includes it
+
 ## Modules
 
 It is easy to program custom pipeline modlues, the interface is simple:

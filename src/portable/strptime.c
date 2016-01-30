@@ -30,7 +30,8 @@
 #include <ctype.h>
 #include <string.h>
 #include <time.h>
-#include "strncasecmp.h"
+
+#include "config.h"
 
 /*
 * We do not implement alternate representations. However, we always
@@ -79,8 +80,15 @@ static const unsigned char *conv_num(const unsigned char *, int *,
 static const unsigned char *find_string(const unsigned char *, int *, const char * const *,
 	const char * const *, int);
 
+#ifndef HAVE_STRPTIME
+// netbsd_strptime can be used even if the platform libc provides strptime
+// However, if it doesn't, we need a wrapper function
+const char * strptime(const char *buf, const char *fmt, struct tm *tm) {
+	return netbsd_strptime(buf, fmt, tm);
+}
+#endif
 
-const char * strptime(const char *buf, const char *fmt, struct tm *tm)
+const char * netbsd_strptime(const char *buf, const char *fmt, struct tm *tm)
 {
 	unsigned char c;
 	const unsigned char *bp, *ep;
@@ -89,7 +97,7 @@ const char * strptime(const char *buf, const char *fmt, struct tm *tm)
 
 	bp = (const unsigned char *)buf;
 
-	while (bp != NULL && (c = *fmt++) != '\0') {
+	while (bp != NULL && (c = (unsigned char)(*fmt++)) != '\0') {
 		/* Clear 'alternate' modifier prior to new conversion. */
 		alt_format = 0;
 		i = 0;
@@ -106,7 +114,7 @@ const char * strptime(const char *buf, const char *fmt, struct tm *tm)
 
 
 	again:
-		switch (c = *fmt++) {
+		switch (c = (unsigned char)(*fmt++)) {
 		case '%':  /* "%%" is converted to "%". */
 			literal :
 				if (c != *bp++)
@@ -167,7 +175,7 @@ const char * strptime(const char *buf, const char *fmt, struct tm *tm)
 		case 'x':  /* The date, using the locale's format. */
 			new_fmt = "%m/%d/%y";
 		recurse:
-			bp = (const unsigned char *)strptime((const char *)bp, new_fmt, tm);
+			bp = (const unsigned char *)netbsd_strptime((const char *)bp, new_fmt, tm);
 			LEGAL_ALT(ALT_E);
 			continue;
 
@@ -526,7 +534,7 @@ unsigned int llim, unsigned int ulim)
 	if (result < llim || result > ulim)
 		return NULL;
 
-	*dest = result;
+	*dest = (int)result;
 	return buf;
 }
 

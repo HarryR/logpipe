@@ -16,11 +16,13 @@ ENDIF (NOT HAVE_TIMEGM)
 
 # Portable strptime for Windows
 CHECK_FUNCTION_EXISTS (strptime HAVE_STRPTIME)
-IF (NOT HAVE_STRPTIME)
+IF (NOT HAVE_STRPTIME OR PORTABLE_STRPTIME)
+    SET(PORTABLE_STRPTIME 1)
+    UNSET(HAVE_STRPTIME)
     MESSAGE(STATUS "Using portable strptime")
     SET(core_sources ${core_sources} "${PROJECT_SOURCE_DIR}/portable/strptime.c")
     SET(core_includes ${core_sources} "${PROJECT_SOURCE_DIR}/portable/strptime.h")
-ENDIF (NOT HAVE_STRPTIME)
+ENDIF (NOT HAVE_STRPTIME OR PORTABLE_STRPTIME)
 
 # Portable strncasecmp for Windows
 CHECK_FUNCTION_EXISTS (strncasecmp HAVE_STRNCASECMP)

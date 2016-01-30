@@ -104,7 +104,7 @@ int str_ptime(const str_t *str, const char *format, struct tm *output) {
     int fail = str_isempty(str);
     if( ! fail ) {
         struct tm local_timestamp;
-        fail = strptime((char*)str->ptr, format, &local_timestamp) == NULL;
+        fail = portable_strptime((char*)str->ptr, format, &local_timestamp) == NULL;
         if( ! fail ) {
             // XXX: Windows and some other platforms don't have tm_gmtoff
             //      How do we adjust to UTC time from local time in that case?
