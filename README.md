@@ -11,8 +11,7 @@ and quickly convert them into Logstash or Hyperstats format.
 The pipeline consists of a number of steps, these are specified
 on the commandline, e.g.:
 
-	> logpipe stdin parse.apacheclf \
-					 print.logstash stdout
+	> logpipe stdin parse.apacheclf print.logstash stdout
 
 The speed of each step can be measured using the `pv` utlilty:
 
@@ -56,6 +55,10 @@ cmake and ragel are used heavily throughout the project to provide a portable bu
 ### Windows
 
 See [appveyor.yaml](appveyor.yaml) for build instructions on Windows.
+
+To build for Windows XP and above with MSVC 2015 Community use:
+
+    cmake . -G "Visual Studio 14 2015" -T v140_xp
 
 ## Pipeline Steps
 

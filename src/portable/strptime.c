@@ -37,7 +37,7 @@
 #ifndef HAVE_LOCALTIME_R
 #define HAVE_LOCALTIME_R
 struct tm *localtime_r(const time_t *clockval, struct tm *result) {
-	if( localtime_s(clockval, result) ) {
+	if( localtime_s(result, clockval) ) {
 		return NULL;
 	}
 	return result;
@@ -46,13 +46,7 @@ struct tm *localtime_r(const time_t *clockval, struct tm *result) {
 #endif
 
 #ifndef HAVE_LOCALTIME_R
-struct tm *localtime_r(const time_t *clockval, struct tm *result) {
-	struct tm *tmpres = localtime(clockval);
-	if( tmpres ) {
-		memcpy(result, tmpres, sizeof(*result));
-	}
-	return result;
-}
+#error "No localtime_r available for platform!"
 #endif
 
 #ifdef HAVE_TM_GMTOFF
@@ -124,6 +118,7 @@ static const char *am_pm[2] = {
 
 static const unsigned char *conv_num(const unsigned char *, int *,
 	unsigned int, unsigned int);
+static const unsigned char *conv_time_t(const unsigned char *, time_t *);
 static const unsigned char *find_string(const unsigned char *, int *, const char * const *,
 	const char * const *, int);
 
@@ -311,25 +306,16 @@ const char * netbsd_strptime(const char *buf, const char *fmt, struct tm *tm)
 			continue;
 
 		case 's':  /* UNIX epoc time */
-		{			
-			time_t secs = 0;
-			if ( *bp < '0' || *bp > '9' ) {
-				// Need at least 1 digit
-				return NULL;
+			{		
+				time_t secs = 0;
+				bp = conv_time_t(bp, &secs);
+				// Then convert to local time struct
+				if( bp && localtime_r(&secs, tm) == NULL ) {
+					return NULL;
+				}			
 			}
-			// Parse digits
-			do {
-				secs *= 10;
-				secs += *bp++ - '0';
-			}
-			while( *bp >= '0' && *bp <= '9' );			
-			// Then convert to local time struct
-			if( localtime_r(&secs, tm) == NULL ) {
-				return NULL;
-			}			
-		}
-		LEGAL_ALT(ALT_O);
-		continue;
+			LEGAL_ALT(ALT_O);
+			continue;
 
 		case 'U':  /* The week of year, beginning on sunday. */
 		case 'W':  /* The week of year, beginning on monday. */
@@ -614,6 +600,26 @@ unsigned int llim, unsigned int ulim)
 		return NULL;
 
 	*dest = (int)result;
+	return buf;
+}
+
+static const unsigned char *
+conv_time_t(const unsigned char *buf, time_t *dest)
+{
+	size_t result = 0;
+	unsigned char ch;
+
+	ch = *buf;
+	if (ch < '0' || ch > '9')
+		return NULL;
+
+	do {
+		result *= 10;
+		result += ch - '0';
+		ch = *++buf;
+	} while (ch >= '0' && ch <= '9');
+
+	*dest = result;
 	return buf;
 }
 

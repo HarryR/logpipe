@@ -1,7 +1,7 @@
 #ifndef LOGPIPE_H__
 #define LOGPIPE_H__
 
-#include <sys/types.h>
+#include <stddef.h>
 
 /* Opaque pointer */
 struct logpipe;
