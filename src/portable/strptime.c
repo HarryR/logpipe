@@ -49,7 +49,7 @@ struct tm *localtime_r(const time_t *clockval, struct tm *result) {
 struct tm *localtime_r(const time_t *clockval, struct tm *result) {
 	struct tm *tmpres = localtime(clockval);
 	if( tmpres ) {
-		*result = *tmpres;
+		memcpy(result, tmpres, sizeof(*result));
 	}
 	return result;
 }
