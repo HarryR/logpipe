@@ -310,7 +310,7 @@ const char * netbsd_strptime(const char *buf, const char *fmt, struct tm *tm)
 				time_t secs = 0;
 				bp = conv_time_t(bp, &secs);
 				// Then convert to local time struct
-				if( bp && localtime_r(&secs, tm) == NULL ) {
+				if( ! bp || localtime_r(&secs, tm) == NULL ) {
 					return NULL;
 				}			
 			}

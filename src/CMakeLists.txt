@@ -25,6 +25,15 @@ IF (NOT HAVE_STRPTIME OR PORTABLE_STRPTIME)
     SET(core_includes ${core_sources} "${PROJECT_SOURCE_DIR}/portable/strptime.h")
 ENDIF (NOT HAVE_STRPTIME OR PORTABLE_STRPTIME)
 
+CHECK_FUNCTION_EXISTS (strftime HAVE_STRFTIME)
+IF (NOT HAVE_STRFTIME OR PORTABLE_STRPTIME)
+    SET(PORTABLE_STRFTIME 1)
+    UNSET(HAVE_STRFTIME)
+    MESSAGE(STATUS "Using portable strftime")
+    SET(core_sources ${core_sources} "${PROJECT_SOURCE_DIR}/portable/strftime.c")
+    SET(core_includes ${core_sources} "${PROJECT_SOURCE_DIR}/portable/strftime.h")
+ENDIF (NOT HAVE_STRFTIME OR PORTABLE_STRPTIME)
+
 # Portable strncasecmp for Windows
 CHECK_FUNCTION_EXISTS (strncasecmp HAVE_STRNCASECMP)
 IF (NOT HAVE_STRNCASECMP)
@@ -62,6 +71,7 @@ CHECK_SYMBOL_EXISTS (tzname "time.h" HAVE_TZNAME)
 CHECK_SYMBOL_EXISTS (_tzname "time.h" HAVE__TZNAME)
 CHECK_SYMBOL_EXISTS (timezone "time.h" HAVE_TIMEZONE)
 CHECK_SYMBOL_EXISTS (_timezone "time.h" HAVE__TIMEZONE)
+CHECK_SYMBOL_EXISTS (_get_tzname "time.h" HAVE__GET_TZNAME)
 
 check_struct_has_member ("struct tm" tm_gmtoff time.h HAVE_TM_GMTOFF)
 check_struct_has_member ("struct tm" tm_zone time.h HAVE_TM_ZONE)

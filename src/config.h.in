@@ -30,9 +30,13 @@
 #cmakedefine HAVE__TIMEZONE
 #cmakedefine HAVE_TM_GMTOFF
 #cmakedefine HAVE_TM_ZONE
+#cmakedefine HAVE__GET_TZNAME
 #cmakedefine HAVE_STRPTIME
+#cmakedefine HAVE_STRFTIME
 #cmakedefine PORTABLE_STRPTIME
+#cmakedefine PORTABLE_STRFTIME
 #include "portable/strptime.h"
+#include "portable/strftime.h"
 
 #cmakedefine HAVE_MEMRCHR
 #ifndef HAVE_MEMRCHR
