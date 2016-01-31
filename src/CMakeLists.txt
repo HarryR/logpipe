@@ -54,7 +54,11 @@ IF (HAVE_SYSLOG)
     SET(core_sources ${core_sources} "${PROJECT_SOURCE_DIR}/optmod/syslog.c")
 ENDIF (HAVE_SYSLOG)
 
-check_struct_has_member ("struct tm"   tm_gmtoff    time.h                   HAVE_TM_GMTOFF)
+CHECK_FUNCTION_EXISTS (tzset HAVE_TZSET)
+CHECK_FUNCTION_EXISTS (localtime_s HAVE_LOCALTIME_S)
+
+check_struct_has_member ("struct tm" tm_gmtoff time.h HAVE_TM_GMTOFF)
+check_struct_has_member ("struct tm" tm_zone time.h HAVE_TM_ZONE)
 
 #
 # Ragel is used by the parser

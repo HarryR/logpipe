@@ -33,6 +33,28 @@
 
 #include "config.h"
 
+#ifdef HAVE_LOCALTIME_S
+struct tm *localtime_r(const time_t *clockval, struct tm *result) {
+	if( localtime_s(clockval, result) ) {
+		return NULL;
+	}
+	return result;
+}
+#endif
+
+#ifdef HAVE_TM_GMTOFF
+#define TM_GMTOFF tm_gmtoff
+#endif
+
+#ifdef HAVE_TM_ZONE
+#define TM_ZONE tm_zone
+#endif
+
+// NetBSD compatibility, hacky macro to avoid discard-const-qualifier warning
+#ifndef UNCONST
+#define UNCONST(a)	((void *)(unsigned long)(const void *)(a))
+#endif
+
 /*
 * We do not implement alternate representations. However, we always
 * check whether a given modifier is allowed for a certain conversion.
@@ -263,6 +285,27 @@ const char * netbsd_strptime(const char *buf, const char *fmt, struct tm *tm)
 			LEGAL_ALT(ALT_O);
 			continue;
 
+		case 's':  /* UNIX epoc time */
+		{			
+			time_t secs = 0;
+			if ( *bp < '0' || *bp > '9' ) {
+				// Need at least 1 digit
+				return NULL;
+			}
+			// Parse digits
+			do {
+				secs *= 10;
+				secs += *bp++ - '0';
+			}
+			while( *bp >= '0' && *bp <= '9' );			
+			// Then convert to local time struct
+			if( localtime_r(&secs, tm) == NULL ) {
+				return NULL;
+			}
+		}
+		LEGAL_ALT(ALT_O);
+		continue;
+
 		case 'U':  /* The week of year, beginning on sunday. */
 		case 'W':  /* The week of year, beginning on monday. */
 			/*
@@ -342,8 +385,10 @@ const char * netbsd_strptime(const char *buf, const char *fmt, struct tm *tm)
 				bp += 3;
 			}
 			else {
-#if defined(_TM_DEFINED) && !defined(_WIN32_WCE)
-				_tzset();
+#ifdef HAVE_TZSET
+				// As per: https://www.gnu.org/software/libc/manual/html_node/Time-Zone-Functions.html
+				// tzset is used to initialise 'tzname' and 'timezone' variables
+				tzset();
 				ep = find_string(bp, &i,
 					(const char * const *)tzname,
 					NULL, 2);
@@ -414,7 +459,7 @@ const char * netbsd_strptime(const char *buf, const char *fmt, struct tm *tm)
 					tm->TM_GMTOFF = -5 - i;
 #endif
 #ifdef TM_ZONE
-					tm->TM_ZONE = __UNCONST(nast[i]);
+					tm->TM_ZONE = UNCONST(nast[i]);
 #endif
 					bp = ep;
 					continue;
@@ -426,7 +471,7 @@ const char * netbsd_strptime(const char *buf, const char *fmt, struct tm *tm)
 					tm->TM_GMTOFF = -4 - i;
 #endif
 #ifdef TM_ZONE
-					tm->TM_ZONE = __UNCONST(nadt[i]);
+					tm->TM_ZONE = UNCONST(nadt[i]);
 #endif
 					bp = ep;
 					continue;

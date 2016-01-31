@@ -21,7 +21,9 @@
 #include "portable/strndup.h"
 #endif
 
+#cmakedefine HAVE_TZSET
 #cmakedefine HAVE_TM_GMTOFF
+#cmakedefine HAVE_TM_ZONE
 #cmakedefine HAVE_STRPTIME
 #cmakedefine PORTABLE_STRPTIME
 #include "portable/strptime.h"
