@@ -22,6 +22,12 @@
 #endif
 
 #cmakedefine HAVE_TZSET
+#cmakedefine HAVE_LOCALTIME_S
+#cmakedefine HAVE_LOCALTIME_R
+#cmakedefine HAVE_TZNAME
+#cmakedefine HAVE__TZNAME
+#cmakedefine HAVE_TIMEZONE
+#cmakedefine HAVE__TIMEZONE
 #cmakedefine HAVE_TM_GMTOFF
 #cmakedefine HAVE_TM_ZONE
 #cmakedefine HAVE_STRPTIME

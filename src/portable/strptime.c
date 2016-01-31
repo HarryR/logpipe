@@ -34,9 +34,22 @@
 #include "config.h"
 
 #ifdef HAVE_LOCALTIME_S
+#ifndef HAVE_LOCALTIME_R
+#define HAVE_LOCALTIME_R
 struct tm *localtime_r(const time_t *clockval, struct tm *result) {
 	if( localtime_s(clockval, result) ) {
 		return NULL;
+	}
+	return result;
+}
+#endif
+#endif
+
+#ifndef HAVE_LOCALTIME_R
+struct tm *localtime_r(const time_t *clockval, struct tm *result) {
+	struct tm *tmpres = localtime(clockval);
+	if( tmpres ) {
+		*result = *tmpres;
 	}
 	return result;
 }
@@ -48,6 +61,18 @@ struct tm *localtime_r(const time_t *clockval, struct tm *result) {
 
 #ifdef HAVE_TM_ZONE
 #define TM_ZONE tm_zone
+#endif
+
+#ifndef HAVE_TZNAME
+#ifdef HAVE__TZNAME
+#define tzname _tzname
+#endif
+#endif
+
+#ifndef HAVE_TIMEZONE
+#ifdef HAVE__TIMEZONE
+#define timezone _timezone
+#endif
 #endif
 
 // NetBSD compatibility, hacky macro to avoid discard-const-qualifier warning
@@ -301,7 +326,7 @@ const char * netbsd_strptime(const char *buf, const char *fmt, struct tm *tm)
 			// Then convert to local time struct
 			if( localtime_r(&secs, tm) == NULL ) {
 				return NULL;
-			}
+			}			
 		}
 		LEGAL_ALT(ALT_O);
 		continue;
@@ -388,7 +413,16 @@ const char * netbsd_strptime(const char *buf, const char *fmt, struct tm *tm)
 #ifdef HAVE_TZSET
 				// As per: https://www.gnu.org/software/libc/manual/html_node/Time-Zone-Functions.html
 				// tzset is used to initialise 'tzname' and 'timezone' variables
-				tzset();
+				#if defined(_MSC_VER) || defined(__MINGW32__) || defined(_WIN32)
+					// When compiling with MinGW (which does not provide a full POSIX
+ 					// layer as opposed to CygWin) it's better to use the CRT's
+ 					// underscore-prefixed `_tzset()` variant to avoid linker issues
+ 					// as Microsoft considers the POSIX named `tzset()` function
+ 					// deprecated (see http://msdn.microsoft.com/en-us/library/ms235384.aspx)
+					_tzset();
+				#else
+					tzset();
+				#endif
 				ep = find_string(bp, &i,
 					(const char * const *)tzname,
 					NULL, 2);

@@ -2,6 +2,7 @@ PROJECT (logpipe_core C)
 
 INCLUDE(CheckFunctionExists)
 INCLUDE(CheckStructHasMember)
+INCLUDE(CheckSymbolExists)
 
 FILE(GLOB core_sources "${PROJECT_SOURCE_DIR}/*.c")
 FILE(GLOB core_includes "${PROJECT_SOURCE_DIR}/*.h")
@@ -56,6 +57,11 @@ ENDIF (HAVE_SYSLOG)
 
 CHECK_FUNCTION_EXISTS (tzset HAVE_TZSET)
 CHECK_FUNCTION_EXISTS (localtime_s HAVE_LOCALTIME_S)
+CHECK_FUNCTION_EXISTS (localtime_r HAVE_LOCALTIME_R)
+CHECK_SYMBOL_EXISTS (tzname "time.h" HAVE_TZNAME)
+CHECK_SYMBOL_EXISTS (_tzname "time.h" HAVE__TZNAME)
+CHECK_SYMBOL_EXISTS (timezone "time.h" HAVE_TIMEZONE)
+CHECK_SYMBOL_EXISTS (_timezone "time.h" HAVE__TIMEZONE)
 
 check_struct_has_member ("struct tm" tm_gmtoff time.h HAVE_TM_GMTOFF)
 check_struct_has_member ("struct tm" tm_zone time.h HAVE_TM_ZONE)
