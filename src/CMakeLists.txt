@@ -2,6 +2,7 @@ PROJECT (logpipe_core C)
 
 INCLUDE(CheckFunctionExists)
 INCLUDE(CheckStructHasMember)
+INCLUDE(CheckSymbolExists)
 
 FILE(GLOB core_sources "${PROJECT_SOURCE_DIR}/*.c")
 FILE(GLOB core_includes "${PROJECT_SOURCE_DIR}/*.h")
@@ -16,11 +17,22 @@ ENDIF (NOT HAVE_TIMEGM)
 
 # Portable strptime for Windows
 CHECK_FUNCTION_EXISTS (strptime HAVE_STRPTIME)
-IF (NOT HAVE_STRPTIME)
+IF (NOT HAVE_STRPTIME OR PORTABLE_STRPTIME)
+    SET(PORTABLE_STRPTIME 1)
+    UNSET(HAVE_STRPTIME)
     MESSAGE(STATUS "Using portable strptime")
     SET(core_sources ${core_sources} "${PROJECT_SOURCE_DIR}/portable/strptime.c")
     SET(core_includes ${core_sources} "${PROJECT_SOURCE_DIR}/portable/strptime.h")
-ENDIF (NOT HAVE_STRPTIME)
+ENDIF (NOT HAVE_STRPTIME OR PORTABLE_STRPTIME)
+
+CHECK_FUNCTION_EXISTS (strftime HAVE_STRFTIME)
+IF (NOT HAVE_STRFTIME OR PORTABLE_STRFTIME)
+    SET(PORTABLE_STRFTIME 1)
+    UNSET(HAVE_STRFTIME)
+    MESSAGE(STATUS "Using portable strftime")
+    SET(core_sources ${core_sources} "${PROJECT_SOURCE_DIR}/portable/strftime.c")
+    SET(core_includes ${core_sources} "${PROJECT_SOURCE_DIR}/portable/strftime.h")
+ENDIF (NOT HAVE_STRFTIME OR PORTABLE_STRFTIME)
 
 # Portable strncasecmp for Windows
 CHECK_FUNCTION_EXISTS (strncasecmp HAVE_STRNCASECMP)
@@ -52,7 +64,17 @@ IF (HAVE_SYSLOG)
     SET(core_sources ${core_sources} "${PROJECT_SOURCE_DIR}/optmod/syslog.c")
 ENDIF (HAVE_SYSLOG)
 
-check_struct_has_member ("struct tm"   tm_gmtoff    time.h                   HAVE_TM_GMTOFF)
+CHECK_FUNCTION_EXISTS (tzset HAVE_TZSET)
+CHECK_FUNCTION_EXISTS (localtime_r HAVE_LOCALTIME_R)
+CHECK_SYMBOL_EXISTS (localtime_s "time.h" HAVE_LOCALTIME_S)
+CHECK_SYMBOL_EXISTS (tzname "time.h" HAVE_TZNAME)
+CHECK_SYMBOL_EXISTS (_tzname "time.h" HAVE__TZNAME)
+CHECK_SYMBOL_EXISTS (timezone "time.h" HAVE_TIMEZONE)
+CHECK_SYMBOL_EXISTS (_timezone "time.h" HAVE__TIMEZONE)
+CHECK_SYMBOL_EXISTS (_get_tzname "time.h" HAVE__GET_TZNAME)
+
+check_struct_has_member ("struct tm" tm_gmtoff time.h HAVE_TM_GMTOFF)
+check_struct_has_member ("struct tm" tm_zone time.h HAVE_TM_ZONE)
 
 #
 # Ragel is used by the parser
@@ -110,7 +132,8 @@ INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/third-party)
 INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/..)
 
 RAGEL_GEN(querystring)
-set(core_sources ${core_sources} querystring.c)
+RAGEL_GEN(strpair_split)
+set(core_sources ${core_sources} querystring.c strpair_split.c)
 
 RAGEL_GEN(mod/apacheclf)
 RAGEL_GEN(mod/squid)

@@ -1,6 +1,8 @@
 #ifndef LOGPIPE_H__
 #define LOGPIPE_H__
 
+#include <stddef.h>
+
 /* Opaque pointer */
 struct logpipe;
 typedef struct logpipe logpipe_t;
@@ -51,7 +53,8 @@ void logpipe_destroy(logpipe_t *pipe);
 /**
  * Execute the pipeline until error
  * Upon a successful run, the return value == logpipe_steps_count(..)
- * @return returns index of last step which was run
+ * If the pipeline must halt permanently it will return -1
+ * @return returns index of last step which was run 
  */
 int logpipe_run(logpipe_t *pipe);
 
@@ -83,27 +86,44 @@ void logpipe_restart(logpipe_t *pipe);
  * @param format describes the operation to be performed
  * @return step count after adding, zero or negative on error
  */
-int logpipe_steps_add(logpipe_t *pipe, const char *format);
+size_t logpipe_steps_add(logpipe_t *pipe, const char *format);
 
 /**
  * @return Number of steps in the pipeline
  */
-int logpipe_steps_count(const logpipe_t *pipe);
+size_t logpipe_steps_count(const logpipe_t *pipe);
 
 /**
- * @return Offset of the current step, or -1 if no steps
+ * Verify there are steps using logpipe_steps_count
+ * before trusting the result of this function.
+ * The index will be 0 even if there are no steps.
+ * @return Offset of the current step
  */
-int logpipe_steps_index(const logpipe_t *pipe);
+size_t logpipe_steps_index(const logpipe_t *pipe);
 
 /**
  * Retrieve the current buffer and it's length
  */
-const char *logpipe_buf_get(logpipe_t *pipe, int *len);
+const char *logpipe_buf_get(logpipe_t *pipe, size_t *len);
 
 /**
  * Overwrite the buffer with a new string of a given length
  */
-void logpipe_buf_set(logpipe_t *pipe, const char *str, int len);
+void logpipe_buf_set(logpipe_t *pipe, const char *str, size_t len);
+
+/**
+ * Create a new pipeline, and verify that it executes correctly
+ *
+ * The input string may be ommitted by providing NULL, this is
+ * equivalent to the default state (no value in buffer).
+ *
+ * @param result What logpipe_run should return
+ * @param steps String containing whitespace separated steps
+ * @param input String to use for buffer input
+ * @param output Expected string that will be in buffer after execution
+ * @return 0 on failure
+ */
+int logpipe_test(int result, const char *steps, const char *input, const char *output);
 
 
 #endif

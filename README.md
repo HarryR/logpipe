@@ -11,8 +11,7 @@ and quickly convert them into Logstash or Hyperstats format.
 The pipeline consists of a number of steps, these are specified
 on the commandline, e.g.:
 
-	> logpipe stdin parse.apacheclf \
-					 print.logstash stdout
+	> logpipe stdin parse.apacheclf print.logstash stdout
 
 The speed of each step can be measured using the `pv` utlilty:
 
@@ -39,6 +38,8 @@ buffer and fills it with logstash JSON. This could then be printed using `stdout
 
 ## Getting Started
 
+cmake and ragel are used heavily throughout the project to provide a portable build system and to create fast state machine based parsers with Less Bugs™.
+
 ### Linux (Debian/Ubuntu flavour)
 
     sudo apt-get install zzuf cmake ragel
@@ -53,7 +54,11 @@ buffer and fills it with logstash JSON. This could then be printed using `stdout
 
 ### Windows
 
-See [appveyor.yml](appveyor.yml) for build instructions on Windows.
+See [appveyor.yaml](appveyor.yaml) for build instructions on Windows.
+
+To build for Windows XP and above with MSVC 2015 Community use:
+
+    cmake . -G "Visual Studio 14 2015" -T v140_xp
 
 ## Pipeline Steps
 
@@ -71,6 +76,11 @@ See [appveyor.yml](appveyor.yml) for build instructions on Windows.
  * print.clfjson - FIll buffer with JSON CLF
  * print.logstash - Fill buffer with logstash JSON
  * print.hyperstats - Fill buffer with hyperstats JSON
+ * syslog - Send buffer to syslog
+
+## Cmake Flags
+
+ * `-DPORTABLE_STRPTIME=1` - Use portable `strptime` even if libc includes it
 
 ## Modules
 

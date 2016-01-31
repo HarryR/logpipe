@@ -30,7 +30,49 @@
 #include <ctype.h>
 #include <string.h>
 #include <time.h>
-#include "strncasecmp.h"
+
+#include "config.h"
+
+#ifdef HAVE_LOCALTIME_S
+#ifndef HAVE_LOCALTIME_R
+#define HAVE_LOCALTIME_R
+struct tm *localtime_r(const time_t *clockval, struct tm *result) {
+	if( localtime_s(result, clockval) ) {
+		return NULL;
+	}
+	return result;
+}
+#endif
+#endif
+
+#ifndef HAVE_LOCALTIME_R
+#error "No localtime_r available for platform!"
+#endif
+
+#ifdef HAVE_TM_GMTOFF
+#define TM_GMTOFF tm_gmtoff
+#endif
+
+#ifdef HAVE_TM_ZONE
+#define TM_ZONE tm_zone
+#endif
+
+#ifndef HAVE_TZNAME
+#ifdef HAVE__TZNAME
+#define tzname _tzname
+#endif
+#endif
+
+#ifndef HAVE_TIMEZONE
+#ifdef HAVE__TIMEZONE
+#define timezone _timezone
+#endif
+#endif
+
+// NetBSD compatibility, hacky macro to avoid discard-const-qualifier warning
+#ifndef UNCONST
+#define UNCONST(a)	((void *)(unsigned long)(const void *)(a))
+#endif
 
 /*
 * We do not implement alternate representations. However, we always
@@ -76,11 +118,19 @@ static const char *am_pm[2] = {
 
 static const unsigned char *conv_num(const unsigned char *, int *,
 	unsigned int, unsigned int);
+static const unsigned char *conv_time_t(const unsigned char *, time_t *);
 static const unsigned char *find_string(const unsigned char *, int *, const char * const *,
 	const char * const *, int);
 
+#ifndef HAVE_STRPTIME
+// netbsd_strptime can be used even if the platform libc provides strptime
+// However, if it doesn't, we need a wrapper function
+const char * strptime(const char *buf, const char *fmt, struct tm *tm) {
+	return netbsd_strptime(buf, fmt, tm);
+}
+#endif
 
-const char * strptime(const char *buf, const char *fmt, struct tm *tm)
+const char * netbsd_strptime(const char *buf, const char *fmt, struct tm *tm)
 {
 	unsigned char c;
 	const unsigned char *bp, *ep;
@@ -89,7 +139,7 @@ const char * strptime(const char *buf, const char *fmt, struct tm *tm)
 
 	bp = (const unsigned char *)buf;
 
-	while (bp != NULL && (c = *fmt++) != '\0') {
+	while (bp != NULL && (c = (unsigned char)(*fmt++)) != '\0') {
 		/* Clear 'alternate' modifier prior to new conversion. */
 		alt_format = 0;
 		i = 0;
@@ -106,7 +156,7 @@ const char * strptime(const char *buf, const char *fmt, struct tm *tm)
 
 
 	again:
-		switch (c = *fmt++) {
+		switch (c = (unsigned char)(*fmt++)) {
 		case '%':  /* "%%" is converted to "%". */
 			literal :
 				if (c != *bp++)
@@ -167,7 +217,7 @@ const char * strptime(const char *buf, const char *fmt, struct tm *tm)
 		case 'x':  /* The date, using the locale's format. */
 			new_fmt = "%m/%d/%y";
 		recurse:
-			bp = (const unsigned char *)strptime((const char *)bp, new_fmt, tm);
+			bp = (const unsigned char *)netbsd_strptime((const char *)bp, new_fmt, tm);
 			LEGAL_ALT(ALT_E);
 			continue;
 
@@ -255,6 +305,18 @@ const char * strptime(const char *buf, const char *fmt, struct tm *tm)
 			LEGAL_ALT(ALT_O);
 			continue;
 
+		case 's':  /* UNIX epoc time */
+			{		
+				time_t secs = 0;
+				bp = conv_time_t(bp, &secs);
+				// Then convert to local time struct
+				if( ! bp || localtime_r(&secs, tm) == NULL ) {
+					return NULL;
+				}			
+			}
+			LEGAL_ALT(ALT_O);
+			continue;
+
 		case 'U':  /* The week of year, beginning on sunday. */
 		case 'W':  /* The week of year, beginning on monday. */
 			/*
@@ -334,8 +396,19 @@ const char * strptime(const char *buf, const char *fmt, struct tm *tm)
 				bp += 3;
 			}
 			else {
-#if defined(_TM_DEFINED) && !defined(_WIN32_WCE)
-				_tzset();
+#ifdef HAVE_TZSET
+				// As per: https://www.gnu.org/software/libc/manual/html_node/Time-Zone-Functions.html
+				// tzset is used to initialise 'tzname' and 'timezone' variables
+				#if defined(_MSC_VER) || defined(__MINGW32__) || defined(_WIN32)
+					// When compiling with MinGW (which does not provide a full POSIX
+ 					// layer as opposed to CygWin) it's better to use the CRT's
+ 					// underscore-prefixed `_tzset()` variant to avoid linker issues
+ 					// as Microsoft considers the POSIX named `tzset()` function
+ 					// deprecated (see http://msdn.microsoft.com/en-us/library/ms235384.aspx)
+					_tzset();
+				#else
+					tzset();
+				#endif
 				ep = find_string(bp, &i,
 					(const char * const *)tzname,
 					NULL, 2);
@@ -406,7 +479,7 @@ const char * strptime(const char *buf, const char *fmt, struct tm *tm)
 					tm->TM_GMTOFF = -5 - i;
 #endif
 #ifdef TM_ZONE
-					tm->TM_ZONE = __UNCONST(nast[i]);
+					tm->TM_ZONE = UNCONST(nast[i]);
 #endif
 					bp = ep;
 					continue;
@@ -418,7 +491,7 @@ const char * strptime(const char *buf, const char *fmt, struct tm *tm)
 					tm->TM_GMTOFF = -4 - i;
 #endif
 #ifdef TM_ZONE
-					tm->TM_ZONE = __UNCONST(nadt[i]);
+					tm->TM_ZONE = UNCONST(nadt[i]);
 #endif
 					bp = ep;
 					continue;
@@ -525,6 +598,26 @@ unsigned int llim, unsigned int ulim)
 
 	if (result < llim || result > ulim)
 		return NULL;
+
+	*dest = (int)result;
+	return buf;
+}
+
+static const unsigned char *
+conv_time_t(const unsigned char *buf, time_t *dest)
+{
+	size_t result = 0;
+	unsigned char ch;
+
+	ch = *buf;
+	if (ch < '0' || ch > '9')
+		return NULL;
+
+	do {
+		result *= 10;
+		result += ch - '0';
+		ch = *++buf;
+	} while (ch >= '0' && ch <= '9');
 
 	*dest = result;
 	return buf;

@@ -52,5 +52,5 @@ MU_TEST_SUITE(test_suite) {
 int main(int argc, char *argv[]) {
     MU_RUN_SUITE(test_suite);
     MU_REPORT();
-    return ! minunit_fail && ! minunit_assert;
+    return minunit_fail ? 1 : 0;
 }

@@ -1,3 +1,5 @@
+language: c
+
 before_install:
   - sudo apt-get update -qq
   - sudo apt-get install -qq -y ragel zzuf
@@ -5,7 +7,7 @@ before_install:
 script:
   - cmake .
   - make
-  - make test
+  - CTEST_OUTPUT_ON_FAILURE=1 ctest .
   - ./test.sh
 
 git:
