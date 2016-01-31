@@ -74,15 +74,9 @@ __RCSID("$NetBSD: strftime.c,v 1.18 2007/07/31 20:19:16 ginsbach Exp $");
 
 #ifndef LIBC_SCCS
 #ifndef lint
-static const char	sccsid[] = "@(#)strftime.c	5.4 (Berkeley) 3/14/89";
+//static const char	sccsid[] = "@(#)strftime.c	5.4 (Berkeley) 3/14/89";
 #endif /* !defined lint */
 #endif /* !defined LIBC_SCCS */
-
-//#include "tzfile.h"
-//#include "fcntl.h"
-//#include "locale.h"
-
-//#include "sys/localedef.h"
 
 #define TM_YEAR_BASE 1900
 #define DAYSPERWEEK 7
@@ -167,11 +161,6 @@ static char *	_fmt (const char *, const struct tm *, char *, const char *, int *
 
 #define NO_RUN_TIME_WARNINGS_ABOUT_YEAR_2000_PROBLEMS_THANK_YOU
 
-#ifndef YEAR_2000_NAME
-#define YEAR_2000_NAME	"CHECK_STRFTIME_FORMATS_FOR_TWO_DIGIT_YEARS"
-#endif /* !defined YEAR_2000_NAME */
-
-
 #define IN_NONE	0
 #define IN_SOME	1
 #define IN_THIS	2
@@ -190,22 +179,6 @@ const struct tm * const	t;
 	tzset();
 	warn = IN_NONE;
 	p = _fmt(((format == NULL) ? "%c" : format), t, s, s + maxsize, &warn);
-#ifndef NO_RUN_TIME_WARNINGS_ABOUT_YEAR_2000_PROBLEMS_THANK_YOU
-	if (warn != IN_NONE && getenv(YEAR_2000_NAME) != NULL) {
-		(void)fprintf(stderr, "\n");
-		if (format == NULL)
-			(void) fprintf(stderr, "NULL strftime format ");
-		else	(void)fprintf(stderr, "strftime format \"%s\" ",
-			format);
-		(void)fprintf(stderr, "yields only two digits of years in ");
-		if (warn == IN_SOME)
-			(void) fprintf(stderr, "some locales");
-		else if (warn == IN_THIS)
-			(void) fprintf(stderr, "the current locale");
-		else	(void)fprintf(stderr, "all locales");
-		(void)fprintf(stderr, "\n");
-	}
-#endif /* !defined NO_RUN_TIME_WARNINGS_ABOUT_YEAR_2000_PROBLEMS_THANK_YOU */
 	if (p == s + maxsize)
 		return 0;
 	*p = '\0';
@@ -662,11 +635,7 @@ int *			warnp;
 }
 
 static char *
-_conv(n, format, pt, ptlim)
-const int		n;
-const char * const	format;
-char * const		pt;
-const char * const	ptlim;
+_conv(const int n, const char * const format, char * const pt, const char * const ptlim)
 {
 	char	buf[INT_STRLEN_MAXIMUM(int) + 1];
 
@@ -675,10 +644,7 @@ const char * const	ptlim;
 }
 
 static char *
-_add(str, pt, ptlim)
-const char *		str;
-char *			pt;
-const char * const	ptlim;
+_add(const char *str, char *pt, const char * const ptlim)
 {
 	while (pt < ptlim && (*pt = *str++) != '\0')
 		++pt;
